@@ -51,9 +51,9 @@ The Online Proctor System Application is designed to ensure the integrity and se
 
 
 ## Screenshots
-<img src="Doc/Images/Frontend Screenshots/DASHBOARD.png" alt="Dashboard" > 
-<br />
 <img src="Doc/Images/Frontend Screenshots/home.png" alt="Home" >
+<br />
+<img src="Doc/Images/Frontend Screenshots/DASHBOARD.png" alt="Dashboard" > 
 <br />
 <img src="Doc/Images/Backend Screenshots/head pose.png" alt="head Pose" >
 <br />
