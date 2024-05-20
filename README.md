@@ -15,6 +15,7 @@
   * [Built With](#built-with)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
+  * [Features](#features)
 * [Screenshots](#screenshots)
 
 
@@ -41,8 +42,24 @@ The Online Proctor System Application is designed to ensure the integrity and se
 * node
 * npm
 
+### Features
+
+* AI-Powered Suspicious Activity Detection
+* Real-Time Communication
+* User-Friendly Interface
+* Live Monitoring by Proctors
+
+
 ## Screenshots
-<img src="Doc/Images/Frontend Screenshots/DASHBORAD.png" alt="Dashboard" >
+<img src="Doc/Images/Frontend Screenshots/DASHBOARD.png" alt="Dashboard" > 
+<br />
 <img src="Doc/Images/Frontend Screenshots/home.png" alt="Home" >
+<br />
 <img src="Doc/Images/Backend Screenshots/head pose.png" alt="head Pose" >
-<img src="Doc/Images/Backend Screenshots/Malpracti.png" alt="head Pose" >
+<br />
+<img src="Doc/Images/Backend Screenshots/Malpracti.png" alt="Malpractice" >
+<br />
+
+<h3 align="center">Thanks You</h3>
+
+
