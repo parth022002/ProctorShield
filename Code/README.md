@@ -1,21 +1,11 @@
 <br />
 <p align="center">
-  <a href="https://github.com/ChiragSaxena5437/PARiKSHA">
+  <a href="https://github.com/parth022002/ProctorShield">
     <img src="assets/images/logo.png" alt="Logo" width="130" height="130">
   </a>
 
-  <h3 align="center">PARiKSHA</h3>
+  <h3 align="center">ProctorShield</h3>
 
-  <p align="center">
-    One Stop Solution for all your online exam needs
-    <br />
-    <br />
-    <a href="https://github.com/ChiragSaxena5437/PARiKSHA">View Demo</a>
-    ·
-    <a href="https://github.com/ChiragSaxena5437/PARiKSHA/issues">Report Bug</a>
-    ·
-    <a href="https://github.com/ChiragSaxena5437/PARiKSHA/issues">Request Feature</a>
-  </p>
 </p>
 
 
@@ -25,18 +15,10 @@
   * [Built With](#built-with)
 * [Getting Started](#getting-started)
   * [Prerequisites](#prerequisites)
-  * [Installation](#installation)
-* [Usage](#usage)
-* [Roadmap](#roadmap)
-* [License](#license)
-
 
 
 ## About The Project
-
-![product-screenshot]
-
-
+The Online Proctor System Application is designed to ensure the integrity and security of online examinations. With the growing trend of remote learning and virtual assessments, there is a significant need for robust systems that can monitor and control online examinations, ensuring they are conducted fairly and securely.
 
 ### Built With
 
@@ -50,56 +32,11 @@
 
 ## Getting Started
 
-To get a local copy up and running follow these simple steps.
-
 ### Prerequisites
 
 * python
+* Flask
+* OpenCV
+* Ai models
 * node
 * npm
-
-
-### Installation
-
-1. Clone the repo
-```sh
-git clone https://github.com/ChiragSaxena5437/PARiKSHA.git
-```
-2. Navigate to the repo folder
-```sh
-cd PARiKSHA
-```
-3. Install pip packages
-```sh
-pip install -r requirements.txt
-```
-
-
-
-## Usage
-
-From the repo folder run the following command
-```sh
-python run.py
-```
-
-
-
-## Roadmap
-
-See the [open issues](https://github.com/ChiragSaxena5437/PARiKSHA/issues) for a list of proposed features (and known issues).
-
-
-
-## License
-
-Distributed under the MIT License. See `LICENSE` for more information.
-
-
-
-
-
-
-<!-- MARKDOWN LINKS & IMAGES -->
-<!-- https://www.markdownguide.org/basic-syntax/#reference-style-links -->
-[product-screenshot]: assets/images/About.png
