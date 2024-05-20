@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Feed and Graph</title>
+</head>
+<body>
+    <h1>Camera Feed and Graph</h1>
+    
+    <!-- Video element for displaying camera feed -->
+    <video id="video" width="640" height="480" autoplay></video>
+    
+    <!-- Placeholder for the graph image -->
+    <img id="graph" src="{{ url_for('static', filename='graph.png') }}" alt="Graph">
+    
+    <script>
+        // Function to load the camera feed into the video element
+        async function loadCameraFeed() {
+            const video = document.getElementById('video');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+        }
+        
+        // Function to periodically update the graph image
+        function updateGraph() {
+            const graph = document.getElementById('graph');
+            graph.src = "{{ url_for('static', filename='graph.png') }}" + '?' + new Date().getTime();  // Add timestamp to force browser to reload image
+        }
+        
+        // Load camera feed when the page is loaded
+        window.onload = function() {
+            loadCameraFeed();
+            setInterval(updateGraph, 1000);  // Update graph every second
+        };
+    </script>
+</body>
+</html>
