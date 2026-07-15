@@ -87,9 +87,11 @@ def log_violation():
         header, encoded = image_b64.split(",", 1)
         try:
             image_data = base64.b64decode(encoded)
-            snapshots_dir = os.path.join(current_app.root_path, "static", "snapshots")
-            if not os.path.exists(snapshots_dir):
-                os.makedirs(snapshots_dir)
+            if os.environ.get("VERCEL"):
+                snapshots_dir = "/tmp/static/snapshots"
+            else:
+                snapshots_dir = os.path.join(current_app.root_path, "static", "snapshots")
+            os.makedirs(snapshots_dir, exist_ok=True)
                 
             filename = f"std_{current_user.id}_quiz_{quiz_id}_{violation_type}_{uuid.uuid4().hex[:8]}.jpg"
             filepath = os.path.join(snapshots_dir, filename)
@@ -355,8 +357,10 @@ def upload_recording():
     
     # Save the file
     filename = f"recording_{recording_type}_{current_user.student.id}_{quiz_id}.webm"
-    # Ensure static directory exists
-    static_dir = os.path.join(current_app.root_path, 'static', 'recordings')
+    if os.environ.get("VERCEL"):
+        static_dir = "/tmp/static/recordings"
+    else:
+        static_dir = os.path.join(current_app.root_path, 'static', 'recordings')
     os.makedirs(static_dir, exist_ok=True)
     
     filepath = os.path.join(static_dir, filename)

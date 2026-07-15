@@ -135,5 +135,15 @@ def create_app(config_class = Config):
         response.headers['X-XSS-Protection'] = '1; mode=block'
         return response
 
+    if os.environ.get("VERCEL"):
+        from flask import send_from_directory
+        @app.route('/static/snapshots/<path:filename>')
+        def serve_snapshots(filename):
+            return send_from_directory('/tmp/static/snapshots', filename)
+
+        @app.route('/static/recordings/<path:filename>')
+        def serve_recordings(filename):
+            return send_from_directory('/tmp/static/recordings', filename)
+
     return app
 
