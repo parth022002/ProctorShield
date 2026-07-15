@@ -24,83 +24,97 @@ def create_app(config_class = Config):
     bcrypt.init_app(app)
     db.init_app(app)
 
-    # Perform automated migration: Add duration column to quiz table if not exists
+    # Perform automated database initialization & migrations
     with app.app_context():
         from Proctorshield.models import User, Student, Teacher, Quiz, Quiz_Questions, ProctorLog
-        db.create_all()
-        from sqlalchemy import text
-        try:
-            db.session.execute(text("ALTER TABLE quiz ADD COLUMN duration INTEGER DEFAULT 30"))
-            db.session.commit()
-            print("Successfully migrated: Added duration column to quiz table!")
-        except Exception as e:
-            db.session.rollback()
+        import os
+        from sqlalchemy import inspect, text
 
-        try:
-            db.session.execute(text('''
-                CREATE TABLE IF NOT EXISTS quiz_assigned_students (
-                    student_id INTEGER NOT NULL,
-                    quiz_id INTEGER NOT NULL,
-                    PRIMARY KEY (student_id, quiz_id),
-                    FOREIGN KEY(student_id) REFERENCES student (id) ON DELETE CASCADE,
-                    FOREIGN KEY(quiz_id) REFERENCES quiz (id) ON DELETE CASCADE
-                )
-            '''))
-            db.session.commit()
-            print("Successfully created quiz_assigned_students table!")
-        except Exception as e:
-            db.session.rollback()
+        # Skip heavy legacy migrations on Vercel to optimize serverless cold starts.
+        if not os.environ.get("VERCEL"):
+            db.create_all()
+            try:
+                db.session.execute(text("ALTER TABLE quiz ADD COLUMN duration INTEGER DEFAULT 30"))
+                db.session.commit()
+                print("Successfully migrated: Added duration column to quiz table!")
+            except Exception as e:
+                db.session.rollback()
 
-        try:
-            db.session.execute(text("ALTER TABLE student ADD COLUMN profile_photo TEXT"))
-            db.session.commit()
-            print("Successfully migrated: Added profile_photo column to student table!")
-        except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.execute(text('''
+                    CREATE TABLE IF NOT EXISTS quiz_assigned_students (
+                        student_id INTEGER NOT NULL,
+                        quiz_id INTEGER NOT NULL,
+                        PRIMARY KEY (student_id, quiz_id),
+                        FOREIGN KEY(student_id) REFERENCES student (id) ON DELETE CASCADE,
+                        FOREIGN KEY(quiz_id) REFERENCES quiz (id) ON DELETE CASCADE
+                    )
+                '''))
+                db.session.commit()
+                print("Successfully created quiz_assigned_students table!")
+            except Exception as e:
+                db.session.rollback()
 
-        try:
-            db.session.execute(text("ALTER TABLE quiz ADD COLUMN results_published BOOLEAN DEFAULT 0"))
-            db.session.commit()
-            print("Successfully migrated: Added results_published column to quiz table!")
-        except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE student ADD COLUMN profile_photo TEXT"))
+                db.session.commit()
+                print("Successfully migrated: Added profile_photo column to student table!")
+            except Exception as e:
+                db.session.rollback()
 
-        try:
-            db.session.execute(text("ALTER TABLE proctor_log ADD COLUMN screen_recording TEXT"))
-            db.session.commit()
-            print("Successfully migrated: Added screen_recording column to proctor_log table!")
-        except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE quiz ADD COLUMN results_published BOOLEAN DEFAULT 0"))
+                db.session.commit()
+                print("Successfully migrated: Added results_published column to quiz table!")
+            except Exception as e:
+                db.session.rollback()
 
-        try:
-            db.session.execute(text("ALTER TABLE proctor_log ADD COLUMN camera_recording TEXT"))
-            db.session.commit()
-            print("Successfully migrated: Added camera_recording column to proctor_log table!")
-        except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE proctor_log ADD COLUMN screen_recording TEXT"))
+                db.session.commit()
+                print("Successfully migrated: Added screen_recording column to proctor_log table!")
+            except Exception as e:
+                db.session.rollback()
 
-        try:
-            db.session.execute(text("ALTER TABLE quiz ADD COLUMN attempts_allowed INTEGER DEFAULT 1"))
-            db.session.commit()
-            print("Successfully migrated: Added attempts_allowed column to quiz table!")
-        except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE proctor_log ADD COLUMN camera_recording TEXT"))
+                db.session.commit()
+                print("Successfully migrated: Added camera_recording column to proctor_log table!")
+            except Exception as e:
+                db.session.rollback()
 
-        try:
-            db.session.execute(text("ALTER TABLE proctor_log ADD COLUMN attempts_count INTEGER DEFAULT 0"))
-            db.session.commit()
-            print("Successfully migrated: Added attempts_count column to proctor_log table!")
-        except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE quiz ADD COLUMN attempts_allowed INTEGER DEFAULT 1"))
+                db.session.commit()
+                print("Successfully migrated: Added attempts_allowed column to quiz table!")
+            except Exception as e:
+                db.session.rollback()
 
-        try:
-            db.session.execute(text("ALTER TABLE student ADD COLUMN approved BOOLEAN DEFAULT 0"))
-            db.session.commit()
-            db.session.execute(text("UPDATE student SET approved = 1"))
-            db.session.commit()
-            print("Successfully migrated: Added approved column to student table and approved existing students!")
-        except Exception as e:
-            db.session.rollback()
+            try:
+                db.session.execute(text("ALTER TABLE proctor_log ADD COLUMN attempts_count INTEGER DEFAULT 0"))
+                db.session.commit()
+                print("Successfully migrated: Added attempts_count column to proctor_log table!")
+            except Exception as e:
+                db.session.rollback()
+
+            try:
+                db.session.execute(text("ALTER TABLE student ADD COLUMN approved BOOLEAN DEFAULT 0"))
+                db.session.commit()
+                db.session.execute(text("UPDATE student SET approved = 1"))
+                db.session.commit()
+                print("Successfully migrated: Added approved column to student table and approved existing students!")
+            except Exception as e:
+                db.session.rollback()
+        else:
+            # On Vercel, use a fast single query to check table presence.
+            # If the database is completely empty/new, initialize the tables.
+            try:
+                inspector = inspect(db.engine)
+                if not inspector.has_table("user"):
+                    db.create_all()
+                    print("Vercel startup: Created tables for fresh database.")
+            except Exception as e:
+                print("Vercel database initialization check failed:", e)
 
     from Proctorshield.main.routes import main
     from Proctorshield.auth.routes import auth
