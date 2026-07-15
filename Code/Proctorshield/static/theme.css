@@ -1,0 +1,487 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+/* Global Body Dark Radial Gradient */
+body {
+    font-family: 'Outfit', sans-serif !important;
+    background: radial-gradient(circle at top, #141b2d 0%, #090d16 100%) !important;
+    color: #f3f4f6 !important;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    font-size: 1rem !important;
+    perspective: 1000px;
+}
+
+/* Force bright readable text colors on basic layout elements */
+h1, h2, h3, h4, h5, h6 {
+    font-family: 'Outfit', sans-serif !important;
+    font-weight: 700 !important;
+    color: #ffffff !important;
+    letter-spacing: -0.02em;
+}
+
+p, span, li, td, th, div, label {
+    color: #e5e7eb !important;
+}
+
+/* Fix bootstrap text-muted which turns text black or dark grey */
+.text-muted, small, .small, .text-secondary, .text-muted * {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+/* Form Legend and Border Header Fixes */
+legend, .border-bottom {
+    color: #ffffff !important;
+    border-color: rgba(255, 255, 255, 0.12) !important;
+}
+
+/* Floating 3D breathing animation for welcome panels */
+@keyframes float3D {
+    0% {
+        transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    }
+    50% {
+        transform: translateY(-8px) rotateX(1.5deg) rotateY(-0.5deg);
+        box-shadow: 0 30px 50px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    }
+    100% {
+        transform: translateY(0px) rotateX(0deg) rotateY(0deg);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+    }
+}
+
+/* Overriding Inline background:pink and background-color:white on Layout Wrappers */
+.jumbotron {
+    background: rgba(20, 27, 45, 0.6) !important;
+    background-color: rgba(20, 27, 45, 0.6) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 24px !important;
+    padding: 40px !important;
+    margin-top: 50px !important;
+    color: #ffffff !important;
+    animation: float3D 6s ease-in-out infinite alternate !important;
+    transform-style: preserve-3d;
+}
+
+.container {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+}
+
+/* Make sure text elements inside containers and jumbotrons are readable white */
+.jumbotron h1, .jumbotron h2, .jumbotron h3, .jumbotron h4, .jumbotron h5, .jumbotron p, .jumbotron label, .jumbotron li, .jumbotron strong,
+.container h1, .container h2, .container h3, .container h4, .container p, .container label, .container li, .container strong {
+    color: #ffffff !important;
+}
+
+/* Reset subgrid column layers to transparent so they don't double stack backgrounds */
+.row, .col, .col-sm, .col-md, .col-lg, .col-xl, .col-md-auto, .col-lg-6, .col-lg-12, .col-sm-12, .col-md-12 {
+    background: transparent !important;
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Dashboard Glass Cards & Interactive 3D Tilts */
+.card, .glass-card, .proctor-sidebar, .question-card, .table-container, .setup-panel {
+    background: rgba(20, 27, 45, 0.6) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+    color: #e5e7eb !important;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
+    transform-style: preserve-3d;
+}
+
+.card:hover, .glass-card:hover {
+    transform: translateY(-8px) rotateX(5deg) rotateY(-2deg) scale(1.02) !important;
+    box-shadow: 0 25px 50px rgba(255, 59, 92, 0.22), 0 0 30px rgba(124, 58, 237, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 59, 92, 0.45) !important;
+}
+
+.card img, .glass-card img {
+    border-top-left-radius: 18px !important;
+    border-top-right-radius: 18px !important;
+    border-bottom-left-radius: 0px !important;
+    border-bottom-right-radius: 0px !important;
+    object-fit: cover !important;
+    transition: transform 0.4s ease !important;
+}
+
+.card:hover img, .glass-card:hover img {
+    transform: scale(1.03) !important;
+}
+
+/* Interactive Form Controls */
+.form-control, input[type="text"], input[type="email"], input[type="password"], input[type="number"], input[type="date"], select, textarea {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+    border-radius: 12px !important;
+    padding: 14px 18px !important;
+    font-size: 0.95rem !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.form-control:focus, input[type="text"]:focus, input[type="email"]:focus, input[type="password"]:focus, input[type="number"]:focus, input[type="date"]:focus {
+    background: rgba(255, 255, 255, 0.06) !important;
+    border-color: #ff3b5c !important;
+    box-shadow: 0 0 20px rgba(255, 59, 92, 0.25) !important;
+    color: #ffffff !important;
+    outline: none !important;
+    transform: translateZ(5px) !important;
+}
+
+/* Fix dropdown select options rendering in browser */
+option {
+    background-color: #141b2d !important;
+    color: #ffffff !important;
+}
+
+/* High contrast validator messages and alerts */
+.invalid-feedback, .text-danger, .help-block, .errors, span.text-danger {
+    color: #ff4d6d !important; /* Premium electric coral red */
+    font-weight: 500 !important;
+    font-size: 0.85rem !important;
+    display: block;
+    margin-top: 5px;
+}
+
+.alert-danger {
+    background-color: rgba(255, 59, 92, 0.15) !important;
+    border: 1px solid rgba(255, 59, 92, 0.3) !important;
+    color: #ff4d6d !important;
+    border-radius: 12px !important;
+}
+
+.alert-success {
+    background-color: rgba(0, 230, 118, 0.15) !important;
+    border: 1px solid rgba(0, 230, 118, 0.3) !important;
+    color: #00e676 !important;
+    border-radius: 12px !important;
+}
+
+.alert-warning {
+    background-color: rgba(255, 159, 67, 0.15) !important;
+    border: 1px solid rgba(255, 159, 67, 0.3) !important;
+    color: #ff9f43 !important;
+    border-radius: 12px !important;
+}
+
+.alert-info {
+    background-color: rgba(23, 162, 184, 0.15) !important;
+    border: 1px solid rgba(23, 162, 184, 0.3) !important;
+    color: #17a2b8 !important;
+    border-radius: 12px !important;
+}
+
+.alert, .alert *, .alert p, .alert strong, .alert span, .alert h1, .alert h2, .alert h3, .alert h4 {
+    color: inherit !important;
+}
+
+/* Electric Accent Buttons */
+.btn-primary, .btn-danger, .btn-download, .btn-outline-info, .btn-info, .btn-warning, input[type="submit"], button[type="submit"] {
+    background: linear-gradient(135deg, #ff3b5c 0%, #7c3aed 100%) !important;
+    border: none !important;
+    border-radius: 30px !important;
+    color: #ffffff !important;
+    font-weight: 600 !important;
+    padding: 12px 32px !important;
+    box-shadow: 0 4px 20px rgba(255, 59, 92, 0.3) !important;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+    font-size: 0.95rem !important;
+    cursor: pointer;
+}
+
+.btn-primary:hover, .btn-danger:hover, .btn-download:hover, .btn-outline-info:hover, .btn-info:hover, .btn-warning:hover, input[type="submit"]:hover, button[type="submit"]:hover {
+    transform: translateY(-3px) scale(1.02) translateZ(10px) !important;
+    box-shadow: 0 8px 25px rgba(255, 59, 92, 0.5) !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:active, input[type="submit"]:active, button[type="submit"]:active {
+    transform: translateY(1px) scale(0.97) translateZ(-5px) !important;
+}
+
+/* Secondary Button design */
+.btn-secondary, .btn-review {
+    background: rgba(255, 255, 255, 0.08) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 30px !important;
+    color: #ffffff !important;
+    padding: 10px 28px !important;
+    transition: all 0.3s ease !important;
+}
+
+.btn-secondary:hover, .btn-review:hover {
+    background: rgba(255, 255, 255, 0.15) !important;
+    transform: translateY(-1px) !important;
+    color: #ffffff !important;
+}
+
+/* Links override */
+a {
+    color: rgba(255, 255, 255, 0.75) !important;
+    transition: color 0.25s ease !important;
+    font-weight: 500;
+}
+
+a:hover {
+    color: #ff3b5c !important;
+    text-decoration: none !important;
+}
+
+/* Welcome template page specific styling overrides */
+#hero h1, #hero h2, #hero p, .section-title p, 
+.services .icon-box h4 a, .services .icon-box p, .about p, .counts p, .pricing p {
+    color: #ffffff !important;
+}
+
+.section-title h2 {
+    background: rgba(255, 59, 92, 0.15) !important;
+    color: #ff3b5c !important;
+    border: 1px solid rgba(255, 59, 92, 0.3) !important;
+    font-weight: 600 !important;
+    text-transform: uppercase !important;
+    padding: 8px 20px !important;
+    border-radius: 50px !important;
+    font-size: 13px !important;
+    letter-spacing: 1px !important;
+    display: inline-block !important;
+}
+
+.about .content ul {
+    padding-left: 0 !important;
+}
+
+.about .content ul li {
+    list-style: none !important;
+    margin-bottom: 15px !important;
+    font-size: 1.05rem !important;
+    line-height: 1.6 !important;
+}
+
+/* Force checkmark and vendor icons visibility */
+.about .content ul i, .services .icon-box i {
+    color: #ff3b5c !important;
+    font-size: 1.25rem !important;
+    margin-right: 10px !important;
+    vertical-align: middle !important;
+}
+
+.services .icon-box {
+    background: rgba(255, 255, 255, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+
+/* Navbar glassmorphism */
+.navbar, header#header .d-flex {
+    background: rgba(9, 13, 22, 0.7) !important;
+    backdrop-filter: blur(12px) !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+    padding: 15px 30px !important;
+}
+
+.navbar-brand {
+    color: #ffffff !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.02em;
+    text-shadow: 0 0 15px rgba(255, 59, 92, 0.4);
+}
+
+.navbar-nav .nav-link {
+    color: rgba(255, 255, 255, 0.8) !important;
+    margin-left: 15px;
+    font-size: 0.95rem;
+}
+
+.navbar-nav .nav-link:hover {
+    color: #ff3b5c !important;
+}
+
+/* Force dark theme on footers to eliminate the white contrast blocks */
+footer, .footer, #footer, .site-footer {
+    background-color: #090d16 !important;
+    background: #090d16 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.05) !important;
+    color: rgba(255, 255, 255, 0.5) !important;
+    padding: 40px 0 !important;
+    margin-top: auto !important;
+}
+
+footer a, .footer a {
+    color: rgba(255, 255, 255, 0.5) !important;
+}
+
+footer a:hover, .footer a:hover {
+    color: #ff3b5c !important;
+}
+
+/* Entrance Animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.content-section, .card, .glass-card, .question-card, .table-container, .setup-panel, .container {
+    animation: fadeInUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* Option selections in exams */
+.option-label {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    border-radius: 12px !important;
+    padding: 15px 20px !important;
+    color: #e5e7eb !important;
+    transition: all 0.2s ease !important;
+}
+
+.option-label:hover {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border-color: rgba(255, 59, 92, 0.4) !important;
+}
+
+.option-input:checked + .option-label {
+    background-color: rgba(255, 59, 92, 0.12) !important;
+    border-color: #ff3b5c !important;
+    color: #ffffff !important;
+}
+
+/* Disable clashing legacy zoom scaling animations */
+.zoom, .zoom *, .zoom:hover, .zoom *:hover {
+    transform: none !important;
+    transition: none !important;
+}
+
+/* Map other custom hover sections to animate uniformly */
+.example, .hoverable {
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s ease, border-color 0.4s ease !important;
+}
+
+.example:hover, .hoverable:hover {
+    transform: translateY(-8px) rotateX(4deg) rotateY(-2deg) scale(1.02) !important;
+    box-shadow: 0 25px 50px rgba(255, 59, 92, 0.22), 0 0 30px rgba(124, 58, 237, 0.15), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 59, 92, 0.45) !important;
+}
+
+/* Ensure landing page sections are transparent to show deep radial body gradient */
+section, .about, .services, .features, .cta, .faq, .contact, .team {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* Override bootstrap footer-top light background blocks */
+#footer, .footer-top, #footer .footer-top, #footer .footer-contact * {
+    background-color: #090d16 !important;
+    background: #090d16 !important;
+    color: rgba(255, 255, 255, 0.75) !important;
+}
+
+/* Modal Dark Glassmorphic Theme Overrides */
+.modal-content {
+    background: rgba(20, 27, 45, 0.92) !important;
+    backdrop-filter: blur(24px) !important;
+    -webkit-backdrop-filter: blur(24px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 20px !important;
+    box-shadow: 0 25px 55px rgba(0, 0, 0, 0.6) !important;
+    color: #ffffff !important;
+}
+
+.modal-header, .modal-footer {
+    border-color: rgba(255, 255, 255, 0.08) !important;
+    background: transparent !important;
+}
+
+.modal-title, .modal-body, .modal-body *, .modal-body li {
+    color: #ffffff !important;
+}
+
+.close {
+    color: #ffffff !important;
+    text-shadow: none !important;
+    opacity: 0.75 !important;
+}
+
+.close:hover {
+    color: #ff3b5c !important;
+    opacity: 1 !important;
+}
+
+/* Input group prepends style matching the dark input fields */
+.input-group-text {
+    background-color: rgba(255, 255, 255, 0.05) !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    color: #ffffff !important;
+}
+
+/* Form input fields with numbers or custom attributes */
+input[type="number"], #Marks, input {
+    background: rgba(255, 255, 255, 0.05) !important;
+    color: #ffffff !important;
+}
+
+/* Chatbot Suggestion Buttons styling */
+.chat-sug-btn:hover {
+    background: rgba(255, 59, 92, 0.15) !important;
+    border-color: #ff3b5c !important;
+    transform: translateY(-1px);
+}
+
+/* Jumbotron Dark Glassmorphism Override */
+.jumbotron {
+    background: rgba(20, 27, 45, 0.4) !important;
+    background-color: rgba(20, 27, 45, 0.4) !important;
+    backdrop-filter: blur(12px) !important;
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+    border-radius: 24px !important;
+}
+
+/* Intercept and normalize legacy hardcoded HTML inline colors */
+div[style*="background-color:mistyrose"], div[style*="background-color: mistyrose"],
+div[style*="background-color:aqua"], div[style*="background-color: aqua"],
+div[style*="background-color:coral"], div[style*="background-color: coral"],
+div[style*="background-color:lightpink"], div[style*="background-color: lightpink"],
+div[style*="background-color:lightcoral"], div[style*="background-color: lightcoral"],
+div[style*="background-color:pink"], div[style*="background-color: pink"],
+div[style*="background-color: white"], div[style*="background-color:white"],
+.col-md-auto, .col-lg-2, #po {
+    background: rgba(255, 255, 255, 0.04) !important;
+    background-color: rgba(255, 255, 255, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
+    color: #ffffff !important;
+}
+
+/* Form Dropdown Select heights and clipping overrides */
+select, .form-control select, select.form-control, .question-type-select {
+    height: 48px !important;
+    padding: 10px 15px !important;
+    background-color: #141b2d !important;
+    background: #141b2d !important;
+    color: #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 0.12) !important;
+    border-radius: 8px !important;
+    line-height: 1.5 !important;
+}
+
+select option {
+    background-color: #141b2d !important;
+    color: #ffffff !important;
+    padding: 10px !important;
+}
+
+
+

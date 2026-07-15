@@ -1,0 +1,1136 @@
+{% extends "layout.html" %}
+
+{% block content %}
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+</head>
+
+<style>
+    body {
+        font-family: 'Outfit', sans-serif;
+    }
+    
+    .setup-step {
+        background: rgba(20, 27, 45, 0.6) !important;
+        border-radius: 16px;
+        padding: 20px;
+        width: 140px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        text-align: center;
+    }
+
+    .proctor-sidebar {
+        background: rgba(20, 27, 45, 0.6) !important;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        position: sticky;
+        top: 90px;
+    }
+
+    .glass-card {
+        background: rgba(20, 27, 45, 0.6) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .question-card {
+        background: rgba(20, 27, 45, 0.6) !important;
+        backdrop-filter: blur(16px) !important;
+        -webkit-backdrop-filter: blur(16px) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        border-radius: 20px;
+        padding: 30px;
+        margin-bottom: 30px;
+        box-shadow: 0 15px 35px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    .option-label {
+        display: flex;
+        align-items: center;
+        padding: 15px 20px;
+        border-radius: 12px;
+        background-color: rgba(255, 255, 255, 0.03) !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        color: #ffffff !important;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        margin-top: 12px;
+        font-size: 1.1rem;
+    }
+
+    .option-label:hover {
+        background-color: rgba(255, 255, 255, 0.08) !important;
+        border-color: rgba(255, 255, 255, 0.2) !important;
+    }
+
+    .option-input {
+        display: none;
+    }
+
+    .option-input:checked + .option-label {
+        background-color: rgba(228, 60, 92, 0.15) !important;
+        border-color: #e43c5c !important;
+        color: #e43c5c !important;
+        font-weight: 600;
+    }
+
+    .warning-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(220, 53, 69, 0.9);
+        color: white;
+        display: none;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+        z-index: 99999;
+        text-align: center;
+        padding: 30px;
+    }
+
+    .warning-box {
+        background: #141b2d;
+        color: #dc3545;
+        padding: 30px;
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        max-width: 500px;
+    }
+
+    #webcam-video {
+        transform: scaleX(-1);
+        display: none;
+    }
+
+    #output-canvas {
+        transform: scaleX(-1);
+        width: 100%;
+        border-radius: 12px;
+        background: #000;
+        aspect-ratio: 4/3;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+
+    .volume-meter {
+        height: 12px;
+        border-radius: 6px;
+        background-color: rgba(255, 255, 255, 0.1);
+        overflow: hidden;
+        margin-top: 8px;
+    }
+
+    .volume-level {
+        height: 100%;
+        width: 0%;
+        background-color: #28a745;
+        transition: width 0.1s ease;
+    }
+
+    .alert-log {
+        max-height: 120px;
+        overflow-y: auto;
+        font-size: 0.9rem;
+        background-color: rgba(255, 255, 255, 0.02);
+        border-radius: 10px;
+        padding: 10px;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .calibration-box, .calibration-box span {
+        background: #fff3cd !important;
+        border: 1px solid #ffeeba !important;
+        color: #856404 !important;
+        border-radius: 12px;
+        padding: 15px;
+        margin-top: 20px;
+        font-weight: 500;
+        display: none;
+    }
+</style>
+
+<!-- Warning Overlay -->
+<div class="warning-overlay" id="warning-overlay">
+    <div class="warning-box">
+        <span style="font-size: 4rem;">⚠️</span>
+        <h2 style="font-weight: bold; margin-top: 15px; margin-bottom: 15px;">PROCTOR ALERT</h2>
+        <p id="overlay-msg" style="font-size: 1.2rem; margin-bottom: 25px;"></p>
+        <button class="btn btn-danger btn-lg" id="btn-resolve-warning" style="border-radius: 30px; padding: 10px 30px; font-weight: bold;">
+            I Understand & Resume
+        </button>
+    </div>
+</div>
+
+<div class="container" style="margin-top: 90px; margin-bottom: 50px;">
+    
+    <!-- SETUP PANEL -->
+    <div id="setup-panel" class="jumbotron glass-card" style="padding: 50px; text-align: center;">
+        <h2 style="color: #e43c5c; font-weight: 700; margin-bottom: 15px;">ProctorShield Security Desk</h2>
+        <p class="lead" style="color: #4a5568; max-width: 650px; margin: 0 auto 40px auto; font-size: 1.1rem;">
+            Before initiating the exam, ProctorShield must calibrate your webcam, microphone, and establish fullscreen enforcement. 
+        </p>
+
+        <div style="display: flex; justify-content: center; flex-wrap: wrap; gap: 20px; margin-bottom: 40px;">
+            <div class="setup-step" id="step-cam">
+                <span style="font-size: 2.2rem;">📷</span>
+                <p style="margin-top: 8px; font-weight: 600; margin-bottom: 8px;">Webcam</p>
+                <span class="badge badge-secondary" id="cam-status">Pending</span>
+            </div>
+            <div class="setup-step" id="step-mic">
+                <span style="font-size: 2.2rem;">🎙️</span>
+                <p style="margin-top: 8px; font-weight: 600; margin-bottom: 8px;">Microphone</p>
+                <span class="badge badge-secondary" id="mic-status">Pending</span>
+            </div>
+            <div class="setup-step" id="step-fs">
+                <span style="font-size: 2.2rem;">🖥️</span>
+                <p style="margin-top: 8px; font-weight: 600; margin-bottom: 8px;">Fullscreen</p>
+                <span class="badge badge-secondary" id="fs-status">Pending</span>
+            </div>
+            <div class="setup-step" id="step-cal">
+                <span style="font-size: 2.2rem;">🎯</span>
+                <p style="margin-top: 8px; font-weight: 600; margin-bottom: 8px;">Face Match</p>
+                <span class="badge badge-secondary" id="cal-status">Pending</span>
+            </div>
+        </div>
+
+        <div class="row justify-content-center" style="margin-bottom: 25px;">
+            <div class="col-md-5">
+                <video id="setup-preview-video" style="width: 100%; border-radius: 12px; display: none; transform: scaleX(-1); background: #000; aspect-ratio: 4/3; box-shadow: 0 4px 10px rgba(0,0,0,0.1);"></video>
+                <div class="calibration-box" id="calibration-alert-box">
+                    Align your face inside the screen, look straight, and remain still. Calibrating in <span id="cal-timer">3</span>s...
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-lg btn-danger" id="btn-setup" style="border: none; background: #e43c5c; font-weight: bold; border-radius: 30px; padding: 12px 40px; box-shadow: 0 4px 15px rgba(228, 60, 92, 0.35);">
+            Authorize & Start Setup
+        </button>
+        <button class="btn btn-lg btn-warning" id="btn-calibrate" style="border: none; font-weight: bold; border-radius: 30px; padding: 12px 40px; display: none; box-shadow: 0 4px 15px rgba(255, 193, 7, 0.35); color: #212529;">
+            Verify Face & Calibrate
+        </button>
+    </div>
+
+    <!-- EXAM PANEL -->
+    <div id="exam-panel" class="row" style="display: none;">
+        
+        <!-- LEFT: Questions Column -->
+        <div class="col-md-8">
+            <div class="glass-card" style="padding: 25px 35px; border-radius: 20px; margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <h2 style="font-weight: 700; color: #ffffff; margin: 0;">{{ title }}</h2>
+                    <span class="badge badge-dark" style="font-size: 1.1rem; padding: 8px 15px; border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.08); color: #ffffff;">
+                        Total Questions: {{ question_count }}
+                    </span>
+                </div>
+            </div>
+
+            <form method="POST" action="{{ url_for('student.quiz_post', quiz_id=quiz_id) }}" id="quiz-form">
+                {% for ques in shuffled_questions %}
+                {% set outer_loop_index = loop.index %}
+                <div class="question-card">
+                    <h4 style="font-weight: 600; color: #2d3748; margin-bottom: 20px;">Q : {{ ques }}</h4>
+                    
+                    <div>
+                        {% for opts in questions[ques] %}
+                        {% if opts and opts != "" and opts != "-" and opts != "None" %}
+                        <div style="margin-top: 10px;">
+                            <input class="option-input" type="radio" value="{{ opts }}" name="{{ ques }}" id="opt_{{ loop.index }}_{{ outer_loop_index }}">
+                            <label class="option-label" for="opt_{{ loop.index }}_{{ outer_loop_index }}">
+                                {{ opts }}
+                            </label>
+                        </div>
+                        {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                <div class="d-flex justify-content-end" style="margin-top: 30px; margin-bottom: 50px;">
+                    <input type="submit" value="Submit Exam" class="btn btn-lg btn-danger" 
+                           style="padding: 12px 50px; font-weight: bold; border-radius: 30px; background-color: #e43c5c; border: none; box-shadow: 0 4px 15px rgba(228, 60, 92, 0.4);" 
+                           name="submit_action" id="submit-btn" disabled />
+                </div>
+            </form>
+        </div>
+
+        <!-- RIGHT: Proctoring Sidebar Column -->
+        <div class="col-md-4">
+            <div class="proctor-sidebar">
+                <h4 style="font-weight: 700; color: #e43c5c; margin-bottom: 20px; display: flex; align-items: center; gap: 8px;">
+                    <span style="display:inline-block; width:10px; height:10px; border-radius:50%; background-color:#28a745; animation: pulse 1.5s infinite;"></span>
+                    Live Shield Active
+                </h4>
+
+                <div style="position: relative; margin-bottom: 20px;">
+                    <video id="webcam-video" autoplay playsinline></video>
+                    <canvas id="output-canvas" width="320" height="240"></canvas>
+                </div>
+
+                <div style="margin-bottom: 20px; background: rgba(255, 59, 92, 0.08); padding: 15px; border-radius: 12px; border: 1px solid rgba(255, 59, 92, 0.25);">
+                    <h6 style="color: #ff3b5c; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; font-weight: 700;">Remaining Time</h6>
+                    <span style="font-size: 1.8rem; font-weight: 700; color: #ffffff;" id="quiz-countdown-timer">--:--</span>
+                </div>
+
+                <div style="margin-bottom: 20px;">
+                    <h6 style="font-weight: 600; color: #4a5568; margin-bottom: 5px;">Microphone Level</h6>
+                    <div class="volume-meter">
+                        <div class="volume-level" id="audio-volume-bar"></div>
+                    </div>
+                </div>
+
+                <hr style="border-color: #edf2f7; margin-bottom: 20px;">
+
+                <div class="row text-center" style="margin-bottom: 20px;">
+                    <div class="col">
+                        <h6 style="color: #718096; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Integrity Status</h6>
+                        <span class="badge badge-success" id="integrity-badge" style="font-size: 0.95rem; padding: 6px 12px; border-radius: 20px;">Secure</span>
+                    </div>
+                    <div class="col">
+                        <h6 style="color: #718096; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px;">Violations</h6>
+                        <span class="badge badge-dark" id="violation-counter" style="font-size: 0.95rem; padding: 6px 12px; border-radius: 20px;">0</span>
+                    </div>
+                </div>
+
+                <div>
+                    <h6 style="font-weight: 600; color: #4a5568; margin-bottom: 10px;">Shield Logs</h6>
+                    <div class="alert-log" id="alert-log-container">
+                        <div style="color: #a0aec0; text-align: center; padding-top: 20px;" id="no-alerts-placeholder">No alerts triggered yet</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<!-- Fullscreen Blocker Overlay -->
+<div id="fullscreen-blocker" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(26, 32, 44, 0.98); z-index: 99999; justify-content: center; align-items: center; flex-direction: column; font-family: 'Outfit'; text-align: center; padding: 20px;">
+    <div style="background: rgba(255, 255, 255, 0.05); padding: 40px; border-radius: 24px; border: 1px solid rgba(255, 255, 255, 0.1); max-width: 500px; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+        <span style="font-size: 4rem; display: block; margin-bottom: 20px;">⚠️</span>
+        <h3 style="color: white; font-weight: 700; margin-bottom: 15px;">Fullscreen Mode Required</h3>
+        <p style="color: rgba(255, 255, 255, 0.8); line-height: 1.6; margin-bottom: 30px;">
+            Exiting fullscreen is a proctoring integrity violation. The exam interface is locked. Click below to return to fullscreen and resume the exam.
+        </p>
+        <button onclick="resumeFullscreenFromBlocker()" style="background: #e43c5c; border: none; color: white; padding: 12px 35px; font-weight: bold; border-radius: 30px; box-shadow: 0 4px 15px rgba(228, 60, 92, 0.4); cursor: pointer; font-size: 1.05rem;">
+            Resume Fullscreen
+        </button>
+    </div>
+</div>
+
+<footer class="page-footer text-center" style="padding: 25px; background-color: white; border-top: 1px solid #edf2f7; font-family: 'Outfit';">
+    <div class="container-fluid">
+        <h5 style="font-weight: 600; color: #2d3748; margin-bottom: 5px;">ProctorShield</h5>
+        <p style="color: #718096; font-size: 0.9rem; margin-bottom: 0;">Safeguarding Exam Integrity on the Web. contact: proctorshield.contact@gmail.com</p>
+    </div>
+</footer>
+
+<script>
+    const quizId = {{ quiz_id }};
+    const questionCount = {{ question_count }};
+    
+    let cameraEnabled = false;
+    let microphoneEnabled = false;
+    let fullscreenEnabled = false;
+    let calibrated = false;
+    let setupComplete = false;
+
+    // Face verification matching helper functions
+    const registeredPhotoBase64 = "{{ profile_photo|safe if profile_photo else '' }}";
+    let registeredLandmarks = null;
+    let liveFaceVerificationPassed = false;
+
+    function getFacialRatios(landmarks) {
+        let minX = 1, maxX = 0, minY = 1, maxY = 0;
+        for (let pt of landmarks) {
+            if (pt.x < minX) minX = pt.x;
+            if (pt.x > maxX) maxX = pt.x;
+            if (pt.y < minY) minY = pt.y;
+            if (pt.y > maxY) maxY = pt.y;
+        }
+        const faceWidth = maxX - minX;
+        const faceHeight = maxY - minY;
+        
+        function distance(p1, p2) {
+            return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
+        }
+        
+        const leftEye = landmarks[33];
+        const rightEye = landmarks[263];
+        const noseTip = landmarks[1];
+        const forehead = landmarks[10];
+        const chin = landmarks[152];
+        const mouthLeft = landmarks[61];
+        const mouthRight = landmarks[291];
+        
+        const eyeDist = distance(leftEye, rightEye) / faceWidth;
+        const noseToChin = distance(noseTip, chin) / faceHeight;
+        const noseToForehead = distance(noseTip, forehead) / faceHeight;
+        const mouthWidth = distance(mouthLeft, mouthRight) / faceWidth;
+        const noseToLeftEye = distance(noseTip, leftEye) / faceWidth;
+        const noseToRightEye = distance(noseTip, rightEye) / faceWidth;
+        
+        return [eyeDist, noseToChin, noseToForehead, mouthWidth, noseToLeftEye, noseToRightEye];
+    }
+    
+    function verifyFaceMatch(liveLandmarks, regLandmarks) {
+        if (!liveLandmarks || !regLandmarks) return false;
+        
+        const liveRatios = getFacialRatios(liveLandmarks);
+        const regRatios = getFacialRatios(regLandmarks);
+        
+        let totalDiff = 0;
+        for (let i = 0; i < liveRatios.length; i++) {
+            totalDiff += Math.abs(liveRatios[i] - regRatios[i]);
+        }
+        
+        console.log("Face matching ratio discrepancy:", totalDiff);
+        return totalDiff < 0.15; // standard discrepancy tolerance threshold
+    }
+
+    if (registeredPhotoBase64) {
+        const registeredImage = new Image();
+        registeredImage.src = registeredPhotoBase64;
+        
+        const faceMeshRef = new FaceMesh({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        }});
+        
+        faceMeshRef.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: false,
+            minDetectionConfidence: 0.6
+        });
+        
+        faceMeshRef.onResults(results => {
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                registeredLandmarks = results.multiFaceLandmarks[0];
+                console.log('Baseline face landmarks extracted from profile photo!');
+            } else {
+                console.log('Failed to detect face in registered profile photo.');
+            }
+        });
+        
+        registeredImage.onload = () => {
+            faceMeshRef.send({ image: registeredImage });
+        };
+    } else {
+        console.log('No registered profile photo found.');
+        liveFaceVerificationPassed = true; // fallback for accounts with no photo
+    }
+
+    // Face mesh calibration constants
+    let baselineYawRatio = 0.5; // default center
+    let calibrationFrames = [];
+
+    // Check if answers are complete to enable Submit in pure vanilla JS
+    function checkCompletion() {
+        const checkedCount = document.querySelectorAll('input[type="radio"]:checked').length;
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) {
+            if (checkedCount === questionCount) {
+                submitBtn.removeAttribute('disabled');
+            } else {
+                submitBtn.setAttribute('disabled', 'true');
+            }
+        }
+    }
+    
+    // Register change event listeners in pure vanilla JS using event delegation
+    document.addEventListener('change', (e) => {
+        if (e.target && e.target.type === 'radio') {
+            checkCompletion();
+        }
+    });
+    
+    // Initial check
+    checkCompletion();
+
+    // Trigger Setup process
+    document.getElementById('btn-setup').addEventListener('click', async () => {
+        try {
+            // Request Webcam access
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            document.getElementById('webcam-video').srcObject = stream;
+            
+            // Show preview video on setup page
+            const previewVideo = document.getElementById('setup-preview-video');
+            previewVideo.srcObject = stream;
+            previewVideo.style.display = 'block';
+            
+            cameraEnabled = true;
+            document.getElementById('cam-status').innerText = 'Verified';
+            document.getElementById('cam-status').className = 'badge badge-success';
+
+            // Request Audio access
+            await navigator.mediaDevices.getUserMedia({ audio: true });
+            microphoneEnabled = true;
+            document.getElementById('mic-status').innerText = 'Verified';
+            document.getElementById('mic-status').className = 'badge badge-success';
+
+            // Enable calibration button and hide start setup
+            document.getElementById('btn-setup').style.display = 'none';
+            document.getElementById('btn-calibrate').style.display = 'inline-block';
+            document.getElementById('calibration-alert-box').style.display = 'block';
+        } catch (err) {
+            alert('ProctorShield requires Camera and Microphone access. Please check permissions in your browser.');
+            console.error(err);
+        }
+    });
+
+    // Calibration steps
+    document.getElementById('btn-calibrate').addEventListener('click', () => {
+        // Request fullscreen immediately to satisfy browser user-gesture requirement
+        requestFullscreen();
+
+        let count = 3;
+        document.getElementById('btn-calibrate').disabled = true;
+        
+        // Start calibrating using FaceMesh on the preview stream
+        const faceMeshCal = new FaceMesh({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        }});
+        
+        faceMeshCal.setOptions({
+            maxNumFaces: 1,
+            refineLandmarks: false,
+            minDetectionConfidence: 0.6
+        });
+        
+        faceMeshCal.onResults(results => {
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                const landmarks = results.multiFaceLandmarks[0];
+                const leftEye = landmarks[33];
+                const rightEye = landmarks[263];
+                const nose = landmarks[1];
+                const eyeWidth = rightEye.x - leftEye.x;
+                const yawRatio = (nose.x - leftEye.x) / eyeWidth;
+                calibrationFrames.push(yawRatio);
+
+                // Perform live face matching against registered profile face landmarks
+                if (registeredLandmarks) {
+                    if (verifyFaceMatch(landmarks, registeredLandmarks)) {
+                        liveFaceVerificationPassed = true;
+                    }
+                }
+            }
+        });
+
+        const tempCamera = new Camera(document.getElementById('setup-preview-video'), {
+            onFrame: async () => {
+                await faceMeshCal.send({image: document.getElementById('setup-preview-video')});
+            },
+            width: 320,
+            height: 240
+        });
+        tempCamera.start();
+
+        const timer = setInterval(() => {
+            count--;
+            document.getElementById('cal-timer').innerText = count;
+            if (count === 0) {
+                clearInterval(timer);
+                tempCamera.stop();
+                
+                // Calculate baseline yaw
+                if (calibrationFrames.length > 0) {
+                    const sum = calibrationFrames.reduce((a, b) => a + b, 0);
+                    baselineYawRatio = sum / calibrationFrames.length;
+                    console.log('Baseline face calibration complete. Baseline yaw ratio:', baselineYawRatio);
+                }
+                
+                if (liveFaceVerificationPassed) {
+                    calibrated = true;
+                    document.getElementById('cal-status').innerText = 'Verified';
+                    document.getElementById('cal-status').className = 'badge badge-success';
+                    document.getElementById('calibration-alert-box').className = 'alert alert-success';
+                    document.getElementById('calibration-alert-box').innerText = 'Verification complete! Baseline & Gaze match established.';
+                    document.getElementById('btn-calibrate').style.display = 'none';
+
+                    // Check if all setup points are verified to start the exam
+                    if (cameraEnabled && microphoneEnabled && fullscreenEnabled && !setupComplete) {
+                        startExam();
+                    }
+                } else {
+                    document.getElementById('cal-status').innerText = 'Failed';
+                    document.getElementById('cal-status').className = 'badge badge-danger';
+                    document.getElementById('calibration-alert-box').className = 'alert alert-danger';
+                    document.getElementById('calibration-alert-box').innerText = 'Face Matching Failed! The person attempting to access this exam does not match the registered profile. Entry blocked.';
+                    document.getElementById('btn-calibrate').style.display = 'none';
+                }
+            }
+        }, 1000);
+    });
+
+    function requestFullscreen() {
+        const elem = document.documentElement;
+        if (elem.requestFullscreen) {
+            elem.requestFullscreen();
+        } else if (elem.webkitRequestFullscreen) {
+            elem.webkitRequestFullscreen();
+        } else if (elem.msRequestFullscreen) {
+            elem.msRequestFullscreen();
+        }
+    }
+
+    // Monitor Fullscreen status
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+
+    function handleFullscreenChange() {
+        const isFullscreen = document.fullscreenElement || document.webkitFullscreenElement;
+        
+        if (isFullscreen) {
+            fullscreenEnabled = true;
+            document.getElementById('fs-status').innerText = 'Verified';
+            document.getElementById('fs-status').className = 'badge badge-success';
+            document.getElementById('fullscreen-blocker').style.display = 'none';
+            
+            // If all setup points verified, start exam
+            if (cameraEnabled && microphoneEnabled && calibrated && !setupComplete) {
+                startExam();
+            }
+        } else {
+            fullscreenEnabled = false;
+            document.getElementById('fs-status').innerText = 'Pending';
+            document.getElementById('fs-status').className = 'badge badge-secondary';
+
+            if (setupComplete) {
+                // Violation: Exited Fullscreen!
+                logViolation('fullscreen_exits');
+                showWarning('You have exited Fullscreen mode! Fullscreen mode is mandatory.');
+                document.getElementById('fullscreen-blocker').style.display = 'flex';
+            }
+        }
+    }
+
+    function resumeFullscreenFromBlocker() {
+        requestFullscreen();
+    }
+
+    let durationMinutes = {{ quiz.duration or 30 }};
+    let timeRemaining = durationMinutes * 60;
+    
+    let screenStream = null;
+    let cameraRecorder = null;
+    let screenRecorder = null;
+    let cameraChunks = [];
+    let screenChunks = [];
+
+    function startQuizTimer() {
+        const timerDisplay = document.getElementById('quiz-countdown-timer');
+        const interval = setInterval(() => {
+            let minutes = Math.floor(timeRemaining / 60);
+            let seconds = timeRemaining % 60;
+            
+            seconds = seconds < 10 ? '0' + seconds : seconds;
+            timerDisplay.textContent = `${minutes}:${seconds}`;
+            
+            if (timeRemaining <= 60) {
+                timerDisplay.style.color = '#ff4d6d'; // Visual alert
+            }
+            
+            if (timeRemaining <= 0) {
+                clearInterval(interval);
+                alert('Time has expired! Automatically submitting your answers.');
+                const quizForm = document.getElementById('quiz-form');
+                if (quizForm) {
+                    quizForm.dispatchEvent(new Event('submit'));
+                }
+            }
+            timeRemaining--;
+        }, 1000);
+    }
+
+    async function startExam() {
+        // Go fullscreen automatically
+        requestFullscreen();
+
+        try {
+            screenStream = await navigator.mediaDevices.getDisplayMedia({
+                video: { 
+                    cursor: "always",
+                    displaySurface: "monitor",
+                    width: { max: 1280 },
+                    height: { max: 720 },
+                    frameRate: { max: 10 }
+                },
+                audio: false
+            });
+
+            // Enforce sharing ENTIRE SCREEN
+            const settings = screenStream.getVideoTracks()[0].getSettings();
+            if (settings.displaySurface && settings.displaySurface !== 'monitor') {
+                alert("Security Violation: You must select and share your 'Entire Screen' to proceed with this exam!");
+                screenStream.getTracks().forEach(t => t.stop());
+                window.location.reload();
+                return;
+            }
+        } catch (err) {
+            alert("ProctorShield requires Screen Share permission to ensure integrity. Please restart setup.");
+            window.location.reload();
+            return;
+        }
+
+        setupComplete = true;
+        document.getElementById('setup-panel').style.display = 'none';
+        document.getElementById('exam-panel').style.display = 'flex';
+        
+        // Start Countdown Timer
+        startQuizTimer();
+        
+        // Register fingerprint
+        registerFingerprint();
+        
+        // Start Media Recording
+        startMediaRecording();
+        
+        // Start live media algorithms
+        initMediaPipe();
+        initAudioMonitoring();
+        initEnvironmentMonitoring();
+    }
+
+    function registerFingerprint() {
+        fetch('/student/register_fingerprint', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                quiz_id: quizId,
+                screen_resolution: `${window.screen.width}x${window.screen.height}`,
+                os_platform: navigator.platform || 'Browser Client'
+            })
+        })
+        .then(res => res.json())
+        .then(data => console.log('Fingerprint logged:', data))
+        .catch(err => console.error(err));
+    }
+
+    function startMediaRecording() {
+        const cameraStream = document.getElementById('webcam-video').srcObject;
+        if (cameraStream) {
+            try {
+                cameraChunks = [];
+                
+                let combinedStream = new MediaStream();
+                cameraStream.getVideoTracks().forEach(t => combinedStream.addTrack(t));
+                if (audioStream) {
+                    audioStream.getAudioTracks().forEach(t => combinedStream.addTrack(t));
+                }
+                
+                let options = { videoBitsPerSecond: 100000, audioBitsPerSecond: 32000 };
+                if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8,opus')) {
+                    options.mimeType = 'video/webm;codecs=vp8,opus';
+                } else if (MediaRecorder.isTypeSupported('video/webm')) {
+                    options.mimeType = 'video/webm';
+                }
+                
+                cameraRecorder = new MediaRecorder(combinedStream, options);
+                cameraRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) cameraChunks.push(e.data);
+                };
+                cameraRecorder.start(1000);
+                console.log("Webcam + Audio recording active (Low Bitrate)");
+            } catch (e) {
+                console.error("Failed to start camera MediaRecorder:", e);
+            }
+        }
+        
+        if (screenStream) {
+            try {
+                screenChunks = [];
+                let options = { videoBitsPerSecond: 120000 };
+                if (MediaRecorder.isTypeSupported('video/webm;codecs=vp8')) {
+                    options.mimeType = 'video/webm;codecs=vp8';
+                } else if (MediaRecorder.isTypeSupported('video/webm')) {
+                    options.mimeType = 'video/webm';
+                }
+                
+                screenRecorder = new MediaRecorder(screenStream, options);
+                screenRecorder.ondataavailable = (e) => {
+                    if (e.data && e.data.size > 0) screenChunks.push(e.data);
+                };
+                screenRecorder.start(1000);
+                console.log("Screen recording active (Low Bitrate)");
+                
+                screenStream.getVideoTracks()[0].onended = () => {
+                    alert("Screen sharing was stopped! Automatically submitting exam.");
+                    const quizForm = document.getElementById('quiz-form');
+                    if (quizForm) {
+                        quizForm.dispatchEvent(new Event('submit'));
+                    }
+                };
+            } catch (e) {
+                console.error("Failed to start screen MediaRecorder:", e);
+            }
+        }
+    }
+
+    function stopRecordingsAndUpload() {
+        return new Promise((resolve) => {
+            let pendingUploads = 0;
+            let resolved = false;
+            
+            const timeout = setTimeout(() => {
+                if (!resolved) {
+                    resolved = true;
+                    console.warn("Upload timed out, proceeding to submit.");
+                    resolve();
+                }
+            }, 4000);
+            
+            function checkResolve() {
+                if (pendingUploads === 0 && !resolved) {
+                    resolved = true;
+                    clearTimeout(timeout);
+                    resolve();
+                }
+            }
+            
+            if (cameraRecorder && cameraRecorder.state !== 'inactive') {
+                cameraRecorder.onstop = () => {
+                    const blob = new Blob(cameraChunks, { type: 'video/webm' });
+                    uploadFile(blob, 'camera');
+                };
+                pendingUploads++;
+                cameraRecorder.stop();
+            }
+            
+            if (screenRecorder && screenRecorder.state !== 'inactive') {
+                screenRecorder.onstop = () => {
+                    const blob = new Blob(screenChunks, { type: 'video/webm' });
+                    uploadFile(blob, 'screen');
+                };
+                pendingUploads++;
+                screenRecorder.stop();
+            }
+            
+            if (screenStream) {
+                screenStream.getTracks().forEach(t => t.stop());
+            }
+            
+            if (pendingUploads === 0) {
+                if (!resolved) {
+                    resolved = true;
+                    clearTimeout(timeout);
+                    resolve();
+                }
+            }
+            
+            function uploadFile(blob, type) {
+                const formData = new FormData();
+                formData.append('video', blob);
+                formData.append('quiz_id', quizId);
+                formData.append('type', type);
+                
+                fetch('/student/upload_recording', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(res => res.json())
+                .then(data => {
+                    console.log(`${type} recording uploaded:`, data);
+                    pendingUploads--;
+                    checkResolve();
+                })
+                .catch(err => {
+                    console.error(`Error uploading ${type}:`, err);
+                    pendingUploads--;
+                    checkResolve();
+                });
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+        const quizForm = document.getElementById('quiz-form');
+        let isUploading = false;
+        if (quizForm) {
+            quizForm.addEventListener('submit', async (e) => {
+                if (!isUploading) {
+                    e.preventDefault();
+                    isUploading = true;
+                    const submitBtn = document.getElementById('submit-btn');
+                    if (submitBtn) {
+                        submitBtn.disabled = true;
+                        submitBtn.value = "Uploading recordings...";
+                    }
+                    await stopRecordingsAndUpload();
+                    HTMLFormElement.prototype.submit.call(quizForm);
+                }
+            });
+        }
+    });
+
+    // Proctoring Logging / Alerts
+    const lastLogged = {};
+    const minLogInterval = 6000; // 6 seconds throttle per warning type
+
+    // Hidden canvas for snapshot captures
+    let snapshotCanvas = document.createElement('canvas');
+    snapshotCanvas.width = 320;
+    snapshotCanvas.height = 240;
+    let snapshotCtx = snapshotCanvas.getContext('2d');
+
+    function logViolation(type) {
+        const now = Date.now();
+        if (lastLogged[type] && (now - lastLogged[type] < minLogInterval)) {
+            return; 
+        }
+        lastLogged[type] = now;
+
+        // Capture webcam screenshot
+        const videoElement = document.getElementById('webcam-video');
+        let imgDataUrl = null;
+        if (videoElement && cameraEnabled) {
+            try {
+                snapshotCtx.save();
+                // Flip horizontally so the picture is normal
+                snapshotCtx.translate(320, 0);
+                snapshotCtx.scale(-1, 1);
+                snapshotCtx.drawImage(videoElement, 0, 0, 320, 240);
+                snapshotCtx.restore();
+                imgDataUrl = snapshotCanvas.toDataURL('image/jpeg', 0.6);
+            } catch (err) {
+                console.error("Failed to capture snapshot frame:", err);
+            }
+        }
+
+        // Post violation to backend
+        fetch('/student/log_violation', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                quiz_id: quizId,
+                type: type,
+                image: imgDataUrl
+            })
+        })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Update counter
+                document.getElementById('violation-counter').innerText = data.total_violations;
+                
+                // Update badge
+                const badge = document.getElementById('integrity-badge');
+                badge.innerText = data.status;
+                if (data.status === 'Clean') {
+                    badge.className = 'badge badge-success';
+                } else if (data.status === 'Suspicious') {
+                    badge.className = 'badge badge-warning';
+                } else {
+                    badge.className = 'badge badge-danger';
+                }
+                
+                // Log inside sidebar
+                addLogEntry(type);
+            }
+        })
+        .catch(err => console.error(err));
+    }
+
+    function addLogEntry(type) {
+        const placeholder = document.getElementById('no-alerts-placeholder');
+        if (placeholder) placeholder.remove();
+
+        const container = document.getElementById('alert-log-container');
+        const entry = document.createElement('div');
+        entry.style.padding = '5px 0';
+        entry.style.borderBottom = '1px solid #edf2f7';
+        entry.style.color = '#dc3545';
+        entry.style.fontWeight = '500';
+        
+        let desc = 'Suspicious activity detected';
+        if (type === 'tab_switches') desc = 'Window switched/tab changed';
+        else if (type === 'fullscreen_exits') desc = 'Exited Fullscreen';
+        else if (type === 'face_missing') desc = 'Face missing from camera';
+        else if (type === 'multiple_faces') desc = 'Multiple faces in frame';
+        else if (type === 'look_away') desc = 'Looking away from screen';
+        else if (type === 'noise_violations') desc = 'Suspicious noise detected';
+
+        const time = new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        entry.innerHTML = `[${time}] <span style="font-size: 0.8rem;">🚨</span> ${desc}`;
+        container.insertBefore(entry, container.firstChild);
+    }
+
+    // Display / Clear warnings overlay
+    function showWarning(msg) {
+        document.getElementById('overlay-msg').innerText = msg;
+        document.getElementById('warning-overlay').style.display = 'flex';
+    }
+
+    document.getElementById('btn-resolve-warning').addEventListener('click', () => {
+        document.getElementById('warning-overlay').style.display = 'none';
+        if (!fullscreenEnabled) {
+            requestFullscreen();
+        }
+    });
+
+    // Client-side environment tracking
+    function initEnvironmentMonitoring() {
+        // Tab Focus Loss detection
+        window.addEventListener('blur', () => {
+            logViolation('tab_switches');
+            showWarning('Window Focus Lost! You are not allowed to switch tabs or open other programs.');
+        });
+    }
+
+    // Audio Analysis using Web Audio API
+    let audioStream = null;
+    let audioContext, analyser, javascriptNode, microphone;
+    function initAudioMonitoring() {
+        navigator.mediaDevices.getUserMedia({ audio: true })
+        .then(stream => {
+            audioStream = stream;
+            audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            analyser = audioContext.createAnalyser();
+            microphone = audioContext.createMediaStreamSource(stream);
+            javascriptNode = audioContext.createScriptProcessor(2048, 1, 1);
+
+            analyser.smoothingTimeConstant = 0.8;
+            analyser.fftSize = 512;
+
+            microphone.connect(analyser);
+            analyser.connect(javascriptNode);
+            javascriptNode.connect(audioContext.destination);
+
+            let loudCount = 0;
+            javascriptNode.onaudioprocess = function() {
+                const array = new Uint8Array(analyser.frequencyBinCount);
+                analyser.getByteFrequencyData(array);
+                let values = 0;
+
+                const length = array.length;
+                for (let i = 0; i < length; i++) {
+                    values += array[i];
+                }
+
+                const average = values / length;
+                const bar = document.getElementById('audio-volume-bar');
+                if (bar) {
+                    bar.style.width = Math.min(100, average * 3.5) + '%';
+                    if (average > 30) {
+                        bar.style.backgroundColor = '#dc3545'; // red
+                        loudCount++;
+                    } else if (average > 15) {
+                        bar.style.backgroundColor = '#ffc107'; // yellow
+                        loudCount = 0;
+                    } else {
+                        bar.style.backgroundColor = '#28a745'; // green
+                        loudCount = 0;
+                    }
+                }
+
+                // If loud noise sustained for 2 seconds
+                if (loudCount > 30) {
+                    logViolation('noise_violations');
+                    showWarning('Loud audio / voices detected. Please maintain complete silence.');
+                    loudCount = 0;
+                }
+            };
+        })
+        .catch(err => console.warn(err));
+    }
+
+    // Face mesh algorithms
+    function initMediaPipe() {
+        const videoElement = document.getElementById('webcam-video');
+        const canvasElement = document.getElementById('output-canvas');
+        const canvasCtx = canvasElement.getContext('2d');
+
+        const faceMesh = new FaceMesh({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        }});
+
+        faceMesh.setOptions({
+            maxNumFaces: 2,
+            refineLandmarks: false,
+            minDetectionConfidence: 0.6,
+            minTrackingConfidence: 0.6
+        });
+
+        faceMesh.onResults(function(results) {
+            canvasCtx.save();
+            canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+            canvasCtx.drawImage(results.image, 0, 0, canvasElement.width, canvasElement.height);
+
+            if (results.multiFaceLandmarks && results.multiFaceLandmarks.length > 0) {
+                const landmarksList = results.multiFaceLandmarks;
+                
+                // Draw mesh outline for premium AI feedback
+                canvasCtx.strokeStyle = 'rgba(228, 60, 92, 0.45)';
+                canvasCtx.lineWidth = 0.8;
+                for (const landmarks of landmarksList) {
+                    for (let i = 0; i < landmarks.length; i += 8) {
+                        const pt = landmarks[i];
+                        canvasCtx.beginPath();
+                        canvasCtx.arc(pt.x * canvasElement.width, pt.y * canvasElement.height, 1.5, 0, 2 * Math.PI);
+                        canvasCtx.fillStyle = '#e43c5c';
+                        canvasCtx.fill();
+                    }
+                }
+
+                const faceCount = landmarksList.length;
+                if (faceCount > 1) {
+                    logViolation('multiple_faces');
+                    showWarning('Multiple faces detected! Make sure you are the only one in front of the camera.');
+                } else {
+                    // Yaw calculation using relative ratios
+                    const landmarks = landmarksList[0];
+                    const leftEye = landmarks[33];
+                    const rightEye = landmarks[263];
+                    const nose = landmarks[1];
+
+                    const eyeWidth = rightEye.x - leftEye.x;
+                    const noseDist = nose.x - leftEye.x;
+                    const yawRatio = noseDist / eyeWidth;
+
+                    // Gaze check relative to calibrated baseline
+                    const yawDeviation = yawRatio - baselineYawRatio;
+
+                    if (Math.abs(yawDeviation) > 0.12) {
+                        logViolation('look_away');
+                        showWarning('Suspicious gaze/looking away! Keep your eyes on the screen.');
+                    }
+                }
+            } else {
+                // No face detected
+                logViolation('face_missing');
+                showWarning('Face missing! Please look straight into your webcam.');
+            }
+            canvasCtx.restore();
+        });
+
+        let lastProcessedTime = 0;
+        const throttleInterval = 200; // 5 FPS (every 200ms)
+
+        const camera = new Camera(videoElement, {
+            onFrame: async () => {
+                const now = Date.now();
+                if (now - lastProcessedTime >= throttleInterval) {
+                    lastProcessedTime = now;
+                    await faceMesh.send({image: videoElement});
+                }
+            },
+            width: 320,
+            height: 240
+        });
+        camera.start();
+    }
+</script>
+{% endblock content %}

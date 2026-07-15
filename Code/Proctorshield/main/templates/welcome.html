@@ -1,0 +1,508 @@
+{% extends "layout.html" %}
+{% block content %}
+
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+</head>
+
+<style>
+  /* Custom modern landing page layout styles */
+  .welcome-body {
+      font-family: 'Outfit', sans-serif;
+      background: radial-gradient(circle at top, #141b2d 0%, #090d16 100%);
+      color: #f3f4f6;
+  }
+  
+  /* 3D floating animation */
+  @keyframes spin3D {
+      0% { transform: rotate(0deg) translate3d(0, 0, 0) rotate(0deg); }
+      100% { transform: rotate(360deg) translate3d(15px, -15px, 50px) rotate(-360deg); }
+  }
+
+  @keyframes floatUpDown {
+      0% { transform: translateY(0px) rotate(0deg); }
+      50% { transform: translateY(-20px) rotate(180deg); }
+      100% { transform: translateY(0px) rotate(360deg); }
+  }
+
+  @keyframes pulseGlow {
+      0% { box-shadow: 0 0 15px rgba(255, 59, 92, 0.2); }
+      100% { box-shadow: 0 0 35px rgba(255, 59, 92, 0.5); }
+  }
+
+  .cube-3d {
+      position: absolute;
+      width: 70px;
+      height: 70px;
+      background: linear-gradient(135deg, rgba(255, 59, 92, 0.4) 0%, rgba(124, 58, 237, 0.4) 100%);
+      backdrop-filter: blur(5px);
+      border-radius: 16px;
+      top: 15%;
+      left: 12%;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      animation: floatUpDown 8s ease-in-out infinite alternate;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+      z-index: 1;
+  }
+
+  .sphere-3d {
+      position: absolute;
+      width: 90px;
+      height: 90px;
+      background: radial-gradient(circle at 30% 30%, rgba(255, 255, 255, 0.25) 0%, rgba(124, 58, 237, 0.45) 70%, rgba(0,0,0,0.85) 100%);
+      border-radius: 50%;
+      top: 45%;
+      right: 10%;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      animation: floatUpDown 12s ease-in-out infinite alternate-reverse;
+      box-shadow: inset 0 -10px 20px rgba(0,0,0,0.8), 0 25px 50px rgba(0,0,0,0.5);
+      z-index: 1;
+  }
+
+  .donut-3d {
+      position: absolute;
+      width: 55px;
+      height: 55px;
+      border: 12px solid rgba(255, 59, 92, 0.35);
+      border-radius: 50%;
+      top: 60%;
+      left: 18%;
+      animation: spin3D 14s linear infinite;
+      filter: drop-shadow(0 15px 30px rgba(0,0,0,0.4));
+      z-index: 1;
+  }
+
+  .glow-orb {
+      position: absolute;
+      width: 400px;
+      height: 400px;
+      background: radial-gradient(circle, rgba(255, 59, 92, 0.12) 0%, rgba(124, 58, 237, 0.04) 50%, rgba(0,0,0,0) 70%);
+      border-radius: 50%;
+      top: 5%;
+      right: 20%;
+      filter: blur(50px);
+      pointer-events: none;
+      z-index: 0;
+  }
+
+  /* Glass Cards */
+  .premium-card {
+      background: rgba(20, 27, 45, 0.5) !important;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.08) !important;
+      border-radius: 24px !important;
+      padding: 35px;
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2) !important;
+  }
+
+  .premium-card:hover {
+      transform: translateY(-8px) scale(1.02) !important;
+      border-color: rgba(255, 59, 92, 0.4) !important;
+      box-shadow: 0 25px 50px rgba(255, 59, 92, 0.15) !important;
+  }
+
+  /* Buttons */
+  .btn-hero-primary {
+      background: linear-gradient(135deg, #ff3b5c 0%, #7c3aed 100%) !important;
+      border: none !important;
+      border-radius: 30px !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      padding: 16px 45px !important;
+      font-size: 1.05rem !important;
+      box-shadow: 0 5px 25px rgba(255, 59, 92, 0.4) !important;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      display: inline-block;
+      text-decoration: none;
+  }
+
+  .btn-hero-primary:hover {
+      transform: translateY(-4px) scale(1.03) !important;
+      box-shadow: 0 8px 35px rgba(255, 59, 92, 0.6) !important;
+  }
+
+  .btn-hero-secondary {
+      background: rgba(255, 255, 255, 0.03) !important;
+      border: 1.5px solid rgba(255, 255, 255, 0.2) !important;
+      border-radius: 30px !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      padding: 15px 45px !important;
+      font-size: 1.05rem !important;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1) !important;
+      backdrop-filter: blur(8px);
+      display: inline-block;
+      text-decoration: none;
+  }
+
+  .btn-hero-secondary:hover {
+      background: rgba(255, 255, 255, 0.08) !important;
+      border-color: #ff3b5c !important;
+      transform: translateY(-4px) scale(1.03) !important;
+  }
+
+  /* Section Styling */
+  .section-title h2 {
+      font-size: 0.9rem !important;
+      letter-spacing: 0.15em !important;
+      font-weight: 700 !important;
+      text-transform: uppercase !important;
+      color: #ff3b5c !important;
+      margin-bottom: 10px;
+  }
+
+  .section-title h3 {
+      font-size: 2.25rem !important;
+      font-weight: 800 !important;
+      color: #ffffff !important;
+  }
+
+  .faq-link {
+      background: rgba(255, 255, 255, 0.02) !important;
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 16px;
+      padding: 20px 25px;
+      color: #ffffff !important;
+      font-weight: 600;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      transition: all 0.25s ease;
+      text-decoration: none !important;
+  }
+
+  .faq-link:hover, .faq-link[aria-expanded="true"] {
+      background: rgba(255, 255, 255, 0.05) !important;
+      border-color: rgba(255, 59, 92, 0.3);
+  }
+
+  .faq-link i {
+      transition: transform 0.3s ease;
+      color: #ff3b5c;
+  }
+
+  .faq-link[aria-expanded="true"] i {
+      transform: rotate(180deg);
+  }
+
+  .faq-body {
+      padding: 20px 25px;
+      color: rgba(255, 255, 255, 0.7);
+      line-height: 1.6;
+  }
+</style>
+
+<div class="welcome-body" style="padding-top: 10px;">
+  
+  <!-- HERO SECTION -->
+  <section id="hero" style="position: relative; overflow: hidden; padding: 140px 0 100px 0;">
+    <div class="cube-3d"></div>
+    <div class="sphere-3d"></div>
+    <div class="donut-3d"></div>
+    <div class="glow-orb"></div>
+
+    <div class="container text-center" style="position: relative; z-index: 10; max-width: 900px;">
+      <div style="display: inline-block; padding: 6px 18px; background: rgba(255, 59, 92, 0.1); border: 1px solid rgba(255, 59, 92, 0.25); border-radius: 30px; margin-bottom: 25px; animation: pulseGlow 2s infinite alternate;">
+         <span style="color: #ff3b5c; font-weight: 600; font-size: 0.9rem; letter-spacing: 0.05em; text-transform: uppercase;">🛡️ Welcome to Proctorshield</span>
+      </div>
+      <h1 style="font-size: 4rem; font-weight: 850; line-height: 1.15; color: #ffffff; letter-spacing: -0.03em; margin-bottom: 20px; text-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+         Next-Gen Online Exam <br><span style="background: linear-gradient(135deg, #ff3b5c 0%, #7c3aed 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 20px rgba(255, 59, 92, 0.35));">Integrity & Quality</span>
+      </h1>
+      <p style="font-size: 1.25rem; color: rgba(255,255,255,0.75); line-height: 1.6; max-width: 650px; margin: 0 auto 40px auto;">
+         Safeguarding academic honesty with state-of-the-art AI-powered facial, audio, and environment proctoring solutions.
+      </p>
+      
+      <div style="display: flex; gap: 20px; justify-content: center; align-items: center;">
+         <a href="{{url_for('auth.login')}}" class="btn-hero-primary">Get Started (Login)</a>
+         <a href="{{url_for('auth.register')}}" class="btn-hero-secondary">Create Account</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ABOUT / BENEFITS SECTION -->
+  <section id="about" style="padding: 90px 0;">
+    <div class="container">
+      <div class="section-title text-center" style="margin-bottom: 60px;">
+        <h2>About</h2>
+        <h3>Learn More <span style="color: #ff3b5c;">About</span> Proctorshield</h3>
+        <p style="color: rgba(255, 255, 255, 0.6); max-width: 600px; margin: 15px auto 0 auto;">A modern, cohesive proctoring and assessment platform designed to deliver secure, crash-proof examinations.</p>
+      </div>
+
+      <div class="row">
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="premium-card h-100">
+            <span style="font-size: 2.5rem; display: block; margin-bottom: 20px;">📅</span>
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 15px;">Exam Scheduler</h4>
+            <p style="color: rgba(255, 255, 255, 0.7); line-height: 1.6; font-size: 0.95rem;">Easily create, schedule, and assign live video-monitored exams to registered students from our dashboard templates.</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="premium-card h-100">
+            <span style="font-size: 2.5rem; display: block; margin-bottom: 20px;">📊</span>
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 15px;">Real-Time Analytics</h4>
+            <p style="color: rgba(255, 255, 255, 0.7); line-height: 1.6; font-size: 0.95rem;">Get deep insights into class results and student performance with automated graphical analytics and reports.</p>
+          </div>
+        </div>
+
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="premium-card h-100">
+            <span style="font-size: 2.5rem; display: block; margin-bottom: 20px;">🛡️</span>
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 15px;">AI Security Shield</h4>
+            <p style="color: rgba(255, 255, 255, 0.7); line-height: 1.6; font-size: 0.95rem;">Detect cheating attempts instantly with web camera tracking, gaze verification, audio analysis, and screen recording logs.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SERVICES SECTION -->
+  <section id="services" style="padding: 90px 0; background: rgba(255,255,255,0.01);">
+    <div class="container">
+      <div class="section-title text-center" style="margin-bottom: 60px;">
+        <h2>Services</h2>
+        <h3><span style="color: #ff3b5c;">Services</span> Offered by Proctorshield</h3>
+        <p style="color: rgba(255, 255, 255, 0.6); max-width: 600px; margin: 15px auto 0 auto;">A suite of digital services customized to modernize institutional assessment frameworks.</p>
+      </div>
+
+      <div class="row">
+        <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4">
+          <div class="premium-card text-center" style="width: 100%; padding: 40px 20px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 59, 92, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; box-shadow: 0 0 20px rgba(255, 59, 92, 0.25);">
+              <i class="fa fa-video-camera" style="font-size: 1.8rem; color: #ff3b5c; margin: 0;"></i>
+            </div>
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 15px;">Live Exams</h4>
+            <p style="color: rgba(255, 255, 255, 0.65); font-size: 0.9rem; line-height: 1.6;">AI-powered live video and audio analysis mapping student behavior during test sessions.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4">
+          <div class="premium-card text-center" style="width: 100%; padding: 40px 20px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 59, 92, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; box-shadow: 0 0 20px rgba(255, 59, 92, 0.25);">
+              <i class="fa fa-file-text-o" style="font-size: 1.8rem; color: #ff3b5c; margin: 0;"></i>
+            </div>
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 15px;">Quiz Templates</h4>
+            <p style="color: rgba(255, 255, 255, 0.65); font-size: 0.9rem; line-height: 1.6;">Flexible builders for custom tests with custom questions, marks, and attempt limits.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4">
+          <div class="premium-card text-center" style="width: 100%; padding: 40px 20px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 59, 92, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; box-shadow: 0 0 20px rgba(255, 59, 92, 0.25);">
+              <i class="fa fa-bar-chart" style="font-size: 1.8rem; color: #ff3b5c; margin: 0;"></i>
+            </div>
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 15px;">Analytics</h4>
+            <p style="color: rgba(255, 255, 255, 0.65); font-size: 0.9rem; line-height: 1.6;">Interactive charts representing individual attempt logs and group performance charts.</p>
+          </div>
+        </div>
+
+        <div class="col-md-6 col-lg-3 d-flex align-items-stretch mb-4">
+          <div class="premium-card text-center" style="width: 100%; padding: 40px 20px;">
+            <div style="width: 70px; height: 70px; border-radius: 50%; background: rgba(255, 59, 92, 0.15); display: flex; align-items: center; justify-content: center; margin: 0 auto 25px auto; box-shadow: 0 0 20px rgba(255, 59, 92, 0.25);">
+              <i class="fa fa-check-circle-o" style="font-size: 1.8rem; color: #ff3b5c; margin: 0;"></i>
+            </div>
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 15px;">Submissions</h4>
+            <p style="color: rgba(255, 255, 255, 0.65); font-size: 0.9rem; line-height: 1.6;">Automated workspace uploading, verification, and database submissions checks.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES LIST GRID -->
+  <section id="features" style="padding: 90px 0;">
+    <div class="container">
+      <div class="section-title text-center" style="margin-bottom: 60px;">
+        <h2>Features</h2>
+        <h3>Key <span style="color: #ff3b5c;">Offerings</span> Overview</h3>
+      </div>
+
+      <div class="row">
+        {% set feats = [
+          ('Schedule Test and Exams', 'fa fa-calendar', '#ffbb2c'),
+          ('Store Student Results', 'fa fa-database', '#5578ff'),
+          ('Ease of Use Interface', 'fa fa-th-large', '#e80368'),
+          ('Create Custom Tests', 'fa fa-pencil-square-o', '#e361ff'),
+          ('Crash Proof Design', 'fa fa-server', '#47aeff'),
+          ('Live Student Monitoring', 'fa fa-eye', '#ffa76e'),
+          ('AI Violation Analysis', 'fa fa-shield', '#11dbcf'),
+          ('On-Premise Scalability', 'fa fa-cloud-upload', '#4233ff')
+        ] %}
+        {% for name, icon, col in feats %}
+        <div class="col-lg-3 col-md-6 mb-4">
+          <div class="premium-card text-center" style="padding: 25px 15px;">
+             <i class="{{ icon }}" style="font-size: 2.2rem; color: {{ col }}; display: block; margin-bottom: 15px;"></i>
+             <h5 style="color: #ffffff; font-weight: 600; margin: 0; font-size: 1rem;">{{ name }}</h5>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA SECTION -->
+  <section style="padding: 80px 0; background: linear-gradient(rgba(9, 13, 22, 0.8), rgba(9, 13, 22, 0.8)); text-align: center; border-top: 1px solid rgba(255, 255, 255, 0.05); border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+    <div class="container">
+      <h3 style="font-weight: 800; font-size: 2.5rem; margin-bottom: 15px;">Ready to secure your learning?</h3>
+      <p style="color: rgba(255, 255, 255, 0.7); max-width: 600px; margin: 0 auto 30px auto;">Register now to access dynamic proctoring, templates creation, and results analytics on your desktop or mobile.</p>
+      <a href="{{url_for('auth.register')}}" class="btn-hero-primary">Register Now</a>
+    </div>
+  </section>
+
+  <!-- TEAM SECTION -->
+  <section id="team" style="padding: 90px 0;">
+    <div class="container">
+      <div class="section-title text-center" style="margin-bottom: 60px;">
+        <h2>Team</h2>
+        <h3>Our Visionary <span style="color: #ff3b5c;">Creators</span></h3>
+        <p style="color: rgba(255, 255, 255, 0.6); max-width: 600px; margin: 15px auto 0 auto;">Meet the minds behind ProctorShield's system architecture and development scaling.</p>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="premium-card text-center">
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 5px;">Parth Ahuja</h4>
+            <span style="color: #ff3b5c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Co-Creator & System Architect</span>
+            <p style="margin-top: 15px; color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; line-height: 1.6;">PGDM in Business Analytics. Leads system analytics modules, database scaling, and proctoring violation diagnostic scores.</p>
+          </div>
+        </div>
+        
+        <div class="col-lg-4 col-md-6 mb-4">
+          <div class="premium-card text-center">
+            <h4 style="color: #ffffff; font-weight: 700; margin-bottom: 5px;">Savan Pethani</h4>
+            <span style="color: #ff3b5c; font-weight: 600; font-size: 0.9rem; text-transform: uppercase;">Co-Creator & Full-Stack Developer</span>
+            <p style="margin-top: 15px; color: rgba(255, 255, 255, 0.7); font-size: 0.95rem; line-height: 1.6;">Full-stack engineer managing Python Flask routes, frontend user views, dynamic webcam feeds, and core dashboard animations.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FAQ SECTION -->
+  <section id="faq" style="padding: 90px 0; background: rgba(255,255,255,0.01);">
+    <div class="container" style="max-width: 800px;">
+      <div class="section-title text-center" style="margin-bottom: 60px;">
+        <h2>F.A.Q</h2>
+        <h3>Frequently Asked <span style="color: #ff3b5c;">Questions</span></h3>
+      </div>
+
+      {% set faqs = [
+        ('What is Proctorshield?', 'Proctorshield is a next-generation online assessment suite utilizing camera, microphone, and browser focus metrics to guarantee exam integrity.'),
+        ('Is Proctorshield only limited to assessments?', 'No. While assessments are our primary focus, our platform also supports general assignments upload, results archiving, and database records search.'),
+        ('Do I need to install anything before using it?', 'No extensions or installation files are required. Proctorshield is web-native and operates directly inside all modern browsers.'),
+        ('Is Proctorshield free?', 'Yes, the core assessment features, templates customization, and student performance dashboard are entirely free to use.')
+      ] %}
+      <div class="accordion" id="faqAccordion">
+        {% for q, a in faqs %}
+        <div class="mb-3" style="border: none;">
+          <a class="faq-link collapsed" data-toggle="collapse" href="#faq{{ loop.index }}" role="button" aria-expanded="false">
+             <span>{{ q }}</span>
+             <i class="fa fa-chevron-down"></i>
+          </a>
+          <div id="faq{{ loop.index }}" class="collapse" data-parent="#faqAccordion">
+            <div class="faq-body">
+              {{ a }}
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer id="footer" style="background-color: #090d16; border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 50px;">
+    <div class="footer-top" style="background: transparent; padding-bottom: 30px;">
+      <div class="container">
+        <div class="row">
+
+          <div class="col-lg-4 col-md-6 footer-contact" style="margin-bottom: 30px;">
+            <h3 style="color: #ffffff; font-weight: 700; margin-bottom: 20px;">Proctorshield</h3>
+            <p style="color: rgba(255, 255, 255, 0.7); line-height: 1.8;">
+              Safeguarding learning integrity and quality with next-generation AI-powered proctoring solutions.
+            </p>
+            <p style="color: rgba(255, 255, 255, 0.6); font-size: 0.9rem; margin-top: 15px;">
+              📍 Marwadi University, Rajkot, India <br>
+              ✉️ proctorshield.contact@gmail.com
+            </p>
+          </div>
+
+          <div class="col-lg-4 col-md-6 footer-links" style="margin-bottom: 30px;">
+            <h4 style="color: #ffffff; font-weight: 600; margin-bottom: 20px; font-size: 1.1rem;">Useful Links</h4>
+            <ul style="list-style: none; padding-left: 0; line-height: 2;">
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <a href="#" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Home</a></li>
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <a href="#about" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">About Us</a></li>
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <a href="#services" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Our Services</a></li>
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <a href="#team" style="color: rgba(255, 255, 255, 0.7); text-decoration: none;">Our Team</a></li>
+            </ul>
+          </div>
+
+          <div class="col-lg-4 col-md-6 footer-links" style="margin-bottom: 30px;">
+            <h4 style="color: #ffffff; font-weight: 600; margin-bottom: 20px; font-size: 1.1rem;">Key Offerings</h4>
+            <ul style="list-style: none; padding-left: 0; line-height: 2;">
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <span style="color: rgba(255, 255, 255, 0.7);">Online Examination</span></li>
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <span style="color: rgba(255, 255, 255, 0.7);">Automated AI Proctoring</span></li>
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <span style="color: rgba(255, 255, 255, 0.7);">Performance Analytics</span></li>
+              <li><i class="fa fa-chevron-right" style="color: #ff3b5c; margin-right: 8px; font-size: 0.8rem;"></i> <span style="color: rgba(255, 255, 255, 0.7);">Plagiarism Detection Integration</span></li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- ======= Contact Section ======= -->
+  <section id="contact" class="contact" style="padding-top: 50px; padding-bottom: 80px; background-color: #090d16; border-top: 1px solid rgba(255, 255, 255, 0.05);">
+    <div class="container">
+
+      <div class="section-title" style="padding-bottom: 15px;">
+        <h2>Contact</h2>
+        <h3 style="color: white;">Contact <span style="color: #ff3b5c;">Us</span></h3>
+      </div>
+
+      <div class="row justify-content-center mt-4">
+        <div class="col-lg-8">
+          <div class="info d-flex justify-content-around align-items-center flex-wrap" style="background: rgba(20, 27, 45, 0.6); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 20px; padding: 40px; box-shadow: 0 15px 35px rgba(0,0,0,0.3);">
+            <div class="address text-center d-flex flex-column align-items-center">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255, 59, 92, 0.15); border: 1px solid rgba(255, 59, 92, 0.3); display: flex; align-items: center; justify-content: center; margin-bottom: 15px; box-shadow: 0 0 15px rgba(255, 59, 92, 0.25);">
+                <i class="fa fa-map-marker" style="font-size: 1.6rem; color: #ff3b5c;"></i>
+              </div>
+              <h4 style="color: #ffffff; font-weight: 700; margin: 0;">Location</h4>
+              <p style="color: rgba(255, 255, 255, 0.75); margin-top: 5px;">Marwadi University, Rajkot, 360003</p>
+            </div>
+
+            <div class="email text-center d-flex flex-column align-items-center">
+              <div style="width: 60px; height: 60px; border-radius: 50%; background: rgba(255, 59, 92, 0.15); border: 1px solid rgba(255, 59, 92, 0.3); display: flex; align-items: center; justify-content: center; margin-bottom: 15px; box-shadow: 0 0 15px rgba(255, 59, 92, 0.25);">
+                <i class="fa fa-envelope" style="font-size: 1.4rem; color: #ff3b5c;"></i>
+              </div>
+              <h4 style="color: #ffffff; font-weight: 700; margin: 0;">Email</h4>
+              <p style="color: rgba(255, 255, 255, 0.75); margin-top: 5px;">Proctorshield.contact@gmail.com</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+</div>
+
+<a href="#" class="back-to-top"><i class="ri-arrow-up-line"></i></a>
+
+<!-- Vendor JS Files -->
+<script src="assets/vendor/jquery/jquery.min.js"></script>
+<script src="assets/vendor/bootstrap/js/bootstrap.bundle.min.js"></script>
+<script src="assets/vendor/jquery.easing/jquery.easing.min.js"></script>
+<script src="assets/vendor/php-email-form/validate.js"></script>
+<script src="assets/vendor/isotope-layout/isotope.pkgd.min.js"></script>
+<script src="assets/vendor/venobox/venobox.min.js"></script>
+<script src="assets/vendor/owl.carousel/owl.carousel.min.js"></script>
+
+<!-- Template Main JS File -->
+<script src="assets/js/main.js"></script>
+
+{% endblock content %}

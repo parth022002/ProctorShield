@@ -1,0 +1,553 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<style>
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #f7f9fc;
+    }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 20px;
+        padding: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        margin-top: 30px;
+        border: 1px solid #edf2f7;
+    }
+
+    .table thead th {
+        border-top: none;
+        background-color: #1a202c;
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        padding: 10px 8px;
+    }
+
+    .table td, .table th {
+        padding: 10px 8px;
+        vertical-align: middle;
+        border-top: 1px solid #edf2f7;
+    }
+
+    .btn-download {
+        background-color: #e43c5c;
+        border: none;
+        color: white;
+        padding: 10px 30px;
+        font-weight: bold;
+        border-radius: 30px;
+        box-shadow: 0 4px 15px rgba(228, 60, 92, 0.3);
+        transition: all 0.2s;
+    }
+
+    .btn-download:hover {
+        background-color: #d12e4e;
+        color: white;
+        box-shadow: 0 6px 20px rgba(228, 60, 92, 0.45);
+    }
+
+    .btn-review {
+        background-color: #1a202c;
+        border: none;
+        color: white;
+        padding: 6px 15px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border-radius: 20px;
+        transition: background-color 0.2s;
+    }
+
+    .btn-review:hover {
+        background-color: #2d3748;
+        color: white;
+    }
+
+    .snapshot-img {
+        width: 100%;
+        border-radius: 10px;
+        border: 1px solid #edf2f7;
+        margin-bottom: 10px;
+        aspect-ratio: 4/3;
+        object-fit: cover;
+        cursor: zoom-in;
+        transition: transform 0.2s ease;
+    }
+
+    .snapshot-img:hover {
+        transform: scale(1.02);
+    }
+
+    .fingerprint-detail {
+        font-size: 0.95rem;
+        color: #ffffff !important;
+        background: rgba(255, 255, 255, 0.06);
+        padding: 12px 18px;
+        border-radius: 12px;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        margin-bottom: 15px;
+    }
+</style>
+
+<div class="container" style="margin-top: 90px; margin-bottom: 50px;">
+    
+    <!-- Header Block -->
+    <div class="glass-card" style="padding: 30px 40px; border-radius: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; background: white;">
+        <div>
+            <h5 style="color: #e43c5c; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Integrity Report</h5>
+            <h2 style="font-weight: 700; color: #2d3748; margin: 0;">Quiz: {{ quiz_title }}</h2>
+        </div>
+        <form method="POST" style="margin: 0;">
+            <button class="btn btn-download" type="submit">
+                📥 Export Results CSV
+            </button>
+        </form>
+    </div>
+
+    <!-- BUSINESS ANALYTICS DASHBOARD -->
+    <div class="row" style="margin-bottom: 30px;">
+        <div class="col-md-4">
+            <div class="glass-card" style="padding: 25px; border-radius: 20px; text-align: center; height: 100%;">
+                <h5 style="color: #ff3b5c; font-weight: 700; margin-bottom: 15px; font-size: 0.95rem; text-transform: uppercase;">Class Risk Profile</h5>
+                <div style="max-height: 200px; display: flex; justify-content: center; align-items: center;">
+                    <canvas id="riskChart" style="max-height: 180px; max-width: 180px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card" style="padding: 25px; border-radius: 20px; text-align: center; height: 100%;">
+                <h5 style="color: #7c3aed; font-weight: 700; margin-bottom: 15px; font-size: 0.95rem; text-transform: uppercase;">Score Distribution</h5>
+                <div style="max-height: 200px; display: flex; justify-content: center; align-items: center;">
+                    <canvas id="scoreChart" style="max-height: 180px; max-width: 240px;"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="glass-card" style="padding: 25px; border-radius: 20px; text-align: center; height: 100%;">
+                <h5 style="color: #00e676; font-weight: 700; margin-bottom: 15px; font-size: 0.95rem; text-transform: uppercase;">Violation Frequencies</h5>
+                <div style="max-height: 200px; display: flex; justify-content: center; align-items: center;">
+                    <canvas id="violationChart" style="max-height: 180px; max-width: 240px;"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table Block -->
+    <div class="table-container">
+        <h4 style="font-weight: 700; color: #2d3748; margin-bottom: 25px;">Candidate Performance & Proctoring Violations</h4>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Rank</th>
+                        <th scope="col">Student ID</th>
+                        <th scope="col">Candidate Name</th>
+                        <th scope="col">Score</th>
+                        <th scope="col">Tab Switches</th>
+                        <th scope="col">Fullscreen Exits</th>
+                        <th scope="col">Look Away</th>
+                        <th scope="col">Face Alerts</th>
+                        <th scope="col">Noise Alerts</th>
+                        <th scope="col">Integrity Status</th>
+                        <th scope="col">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in data %}
+                    <tr>
+                        <th scope="row" style="font-weight: 600; color: #718096;">{{ entry['sr_no'] }}</th>
+                        <td><span style="font-family: monospace; color: #4a5568;">ST-{{ entry['student_id'] }}</span></td>
+                        <td><strong style="color: #2d3748;">{{ entry['student_name'] }}</strong></td>
+                        <td><span style="font-size: 1rem; padding: 5px 10px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); border: 1px solid rgba(255, 255, 255, 0.2); color: #ffffff !important; font-weight: 600; display: inline-block;">{{ entry['marks'] }}</span></td>
+                        <td style="color: {% if entry['tab_switches'] > 0 %}#dc3545; font-weight: 600;{% else %}#718096;{% endif %}">{{ entry['tab_switches'] }}</td>
+                        <td style="color: {% if entry['fullscreen_exits'] > 0 %}#dc3545; font-weight: 600;{% else %}#718096;{% endif %}">{{ entry['fullscreen_exits'] }}</td>
+                        <td style="color: {% if entry['look_away'] > 0 %}#ff9f43; font-weight: 600;{% else %}#718096;{% endif %}">{{ entry['look_away'] }}</td>
+                        <td style="color: {% if (entry['face_missing'] + entry['multiple_faces']) > 0 %}#ff9f43; font-weight: 600;{% else %}#718096;{% endif %}">{{ entry['face_missing'] + entry['multiple_faces'] }}</td>
+                        <td style="color: {% if entry['noise_violations'] > 0 %}#ff9f43; font-weight: 600;{% else %}#718096;{% endif %}">{{ entry['noise_violations'] }}</td>
+                        <td>
+                            {% if entry['status'] == 'Clean' %}
+                            <span style="padding: 6px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; background-color: #28a745; color: #ffffff; display: inline-block;">Clean</span>
+                            {% elif entry['status'] == 'Suspicious' %}
+                            <span style="padding: 6px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; background-color: #ff9f43; color: #1a202c; display: inline-block;">Suspicious</span>
+                            {% else %}
+                            <span style="padding: 6px 12px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; background-color: #dc3545; color: #ffffff; display: inline-block;">Flagged</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if entry['log_id'] %}
+                            <button class="btn btn-review" onclick="openReviewModal({{ entry['log_id'] }})">
+                                Review logs
+                            </button>
+                            {% else %}
+                            <span style="color: #a0aec0; font-size: 0.9rem;">No Log</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- Proctoring Review Modal -->
+<div class="modal fade" id="reviewModal" tabindex="-1" role="dialog" aria-labelledby="reviewModalLabel" aria-hidden="true" style="font-family: 'Outfit';">
+    <div class="modal-dialog modal-lg modal-dialog-centered" role="document">
+        <div class="modal-content" style="border-radius: 20px; border: 1px solid rgba(255, 255, 255, 0.1); box-shadow: 0 15px 50px rgba(0,0,0,0.15); background: #1a202c; color: #ffffff;">
+            <div class="modal-header" style="border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding: 25px;">
+                <h5 class="modal-title" id="reviewModalLabel" style="font-weight: 700; color: #ffffff;">
+                    Integrity Review & Snapshot Archives
+                </h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="color: white; opacity: 0.8;">
+                    <span aria-hidden="true" style="font-size: 1.5rem;">&times;</span>
+                </button>
+            </div>
+            
+            <div class="modal-body" style="padding: 30px;">
+                
+                <!-- AI Proctoring Risk Diagnostics -->
+                <div class="ai-diagnostics-panel" style="background: rgba(255, 255, 255, 0.04); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.08); padding: 20px; margin-bottom: 25px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                        <h5 style="font-weight: 700; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 8px;">
+                            <span style="font-size: 1.3rem;">🤖</span> AI Security Integrity Risk
+                        </h5>
+                        <div>
+                            <span id="ai-risk-badge" class="badge" style="font-size: 1rem; padding: 6px 15px; border-radius: 20px; font-weight: bold;">
+                                0% Risk
+                            </span>
+                        </div>
+                    </div>
+                    <div style="background: rgba(0, 0, 0, 0.2); border-radius: 12px; border: 1px solid rgba(255, 255, 255, 0.05); padding: 15px; font-size: 0.95rem; line-height: 1.5; color: #ffffff;">
+                        <strong style="color: #ffffff; display: block; margin-bottom: 5px;">AI Proctor Analysis:</strong>
+                        <span id="ai-report-text" style="font-family: inherit; font-size: 0.9rem; white-space: pre-line; color: rgba(255, 255, 255, 0.85);">No data analyzed yet.</span>
+                    </div>
+                </div>
+                
+                <!-- Candidate device Profile -->
+                <h5 style="font-weight: 600; color: #ffffff; margin-bottom: 15px;">Device Profile Fingerprint</h5>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="fingerprint-detail">
+                            <strong>Platform:</strong> <span id="fp-os">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="fingerprint-detail">
+                            <strong>Resolution:</strong> <span id="fp-res">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="fingerprint-detail">
+                            <strong>IP Address:</strong> <span id="fp-ip">Loading...</span>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="fingerprint-detail">
+                            <strong>Registered:</strong> <span id="fp-time">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="fingerprint-detail" style="font-size: 0.85rem; color: #ffffff;">
+                    <strong>User-Agent:</strong> <span id="fp-ua">Loading...</span>
+                </div>
+
+                <hr style="border-color: rgba(255, 255, 255, 0.1); margin-top: 30px; margin-bottom: 30px;">
+
+                <!-- Video Recordings -->
+                <div id="video-recordings-section" style="display: none; margin-bottom: 30px;">
+                    <h5 style="font-weight: 600; color: #ffffff; margin-bottom: 15px;">Proctoring Video Evidence</h5>
+                    <div class="row">
+                        <div class="col-md-6" id="camera-video-container" style="display: none;">
+                            <h6 style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 8px;">📷 Student Camera Feed</h6>
+                            <video id="proctor-camera-video" controls style="width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: #000; aspect-ratio: 4/3;"></video>
+                        </div>
+                        <div class="col-md-6" id="screen-video-container" style="display: none;">
+                            <h6 style="color: rgba(255,255,255,0.7); font-size: 0.85rem; margin-bottom: 8px;">🖥️ Student Screen Share</h6>
+                            <video id="proctor-screen-video" controls style="width: 100%; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: #000; aspect-ratio: 4/3;"></video>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Photo Evidence Snapshots -->
+                <h5 style="font-weight: 600; color: #ffffff; margin-bottom: 15px;">Violation Snapshot Archive</h5>
+                
+                <div class="row" id="snapshot-gallery">
+                    <!-- Dynamic Snapshots Injection -->
+                </div>
+                <div id="no-snapshots-msg" style="display: none; text-align: center; color: #a0aec0; padding: 40px 0;">
+                    <span style="font-size: 3rem;">💚</span>
+                    <p style="margin-top: 15px; font-weight: 500;">No violation snapshots captured for this candidate.</p>
+                </div>
+
+            </div>
+            
+            <div class="modal-footer" style="border-top: 1px solid #edf2f7; padding: 20px;">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" style="border-radius: 20px; font-weight: bold; padding: 8px 25px;">Close Review</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Image Zoom Modal -->
+<div class="modal fade" id="zoomModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content" style="background: transparent; border: none; box-shadow: none;">
+            <div class="modal-body text-center" style="padding: 0;">
+                <img id="zoomed-image" style="max-width: 100%; border-radius: 16px; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openReviewModal(logId) {
+        // Clear previous outputs
+        document.getElementById('snapshot-gallery').innerHTML = '';
+        document.getElementById('no-snapshots-msg').style.display = 'none';
+        document.getElementById('ai-risk-badge').innerText = '0% Threat';
+        document.getElementById('ai-risk-badge').className = 'badge badge-secondary';
+        document.getElementById('ai-risk-badge').style.color = '';
+        document.getElementById('ai-risk-badge').style.backgroundColor = '';
+        document.getElementById('ai-report-text').innerText = 'Loading AI report...';
+        
+        // Reset Video Recordings
+        document.getElementById('video-recordings-section').style.display = 'none';
+        document.getElementById('camera-video-container').style.display = 'none';
+        document.getElementById('screen-video-container').style.display = 'none';
+        document.getElementById('proctor-camera-video').src = '';
+        document.getElementById('proctor-screen-video').src = '';
+        
+        // Show loading states
+        document.getElementById('fp-os').innerText = 'Loading...';
+        document.getElementById('fp-res').innerText = 'Loading...';
+        document.getElementById('fp-ip').innerText = 'Loading...';
+        document.getElementById('fp-time').innerText = 'Loading...';
+        document.getElementById('fp-ua').innerText = 'Loading...';
+        
+        $('#reviewModal').modal('show');
+
+        // Fetch log details
+        fetch(`/teacher/get_snapshots/${logId}`)
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                // Populate AI Risk score and logs
+                const riskScore = data.ai_anomaly_score || 0;
+                const riskPercent = Math.round(riskScore * 100);
+                const badge = document.getElementById('ai-risk-badge');
+                badge.innerText = `${riskPercent}% Threat`;
+                
+                badge.className = 'badge';
+                if (riskScore >= 0.60) {
+                    badge.classList.add('badge-danger');
+                } else if (riskScore >= 0.15) {
+                    badge.classList.add('badge-warning');
+                    badge.style.color = '#856404';
+                    badge.style.backgroundColor = '#fff3cd';
+                } else {
+                    badge.classList.add('badge-success');
+                }
+                
+                document.getElementById('ai-report-text').innerText = data.ai_risk_diagnostics || "Secure. No anomalies detected.";
+
+                // Populate Fingerprint
+                if (data.fingerprint) {
+                    document.getElementById('fp-os').innerText = data.fingerprint.os_platform;
+                    document.getElementById('fp-res').innerText = data.fingerprint.screen_resolution;
+                    document.getElementById('fp-ip').innerText = data.fingerprint.ip_address;
+                    document.getElementById('fp-time').innerText = data.fingerprint.timestamp;
+                    document.getElementById('fp-ua').innerText = data.fingerprint.user_agent;
+                } else {
+                    document.getElementById('fp-os').innerText = 'Not Available';
+                    document.getElementById('fp-res').innerText = 'Not Available';
+                    document.getElementById('fp-ip').innerText = 'Not Available';
+                    document.getElementById('fp-time').innerText = 'Not Available';
+                    document.getElementById('fp-ua').innerText = 'Not Available';
+                }
+
+                // Populate Video Recordings
+                let showVideoSection = false;
+                if (data.camera_recording) {
+                    document.getElementById('camera-video-container').style.display = 'block';
+                    document.getElementById('proctor-camera-video').src = data.camera_recording;
+                    showVideoSection = true;
+                }
+                if (data.screen_recording) {
+                    document.getElementById('screen-video-container').style.display = 'block';
+                    document.getElementById('proctor-screen-video').src = data.screen_recording;
+                    showVideoSection = true;
+                }
+                if (showVideoSection) {
+                    document.getElementById('video-recordings-section').style.display = 'block';
+                }
+
+                // Populate Snapshots
+                if (data.snapshots && data.snapshots.length > 0) {
+                    const gallery = document.getElementById('snapshot-gallery');
+                    data.snapshots.forEach(s => {
+                        const col = document.createElement('div');
+                        col.className = 'col-md-4 col-sm-6 text-center';
+                        col.style.marginBottom = '20px';
+                        
+                        let labelClass = 'badge badge-warning';
+                        if (s.type === 'tab_switches' || s.type === 'fullscreen_exits') labelClass = 'badge badge-danger';
+                        
+                        let labelText = s.type.replace('_', ' ').toUpperCase();
+                        
+                        col.innerHTML = `
+                            <img src="${s.image_url}" class="snapshot-img" onclick="zoomImage('${s.image_url}')">
+                            <span class="${labelClass}" style="font-size:0.75rem; border-radius:10px;">${labelText}</span>
+                            <div style="font-size: 0.75rem; color: #718096; margin-top: 4px;">${s.timestamp.split(' ')[1]}</div>
+                        `;
+                        gallery.appendChild(col);
+                    });
+                } else {
+                    document.getElementById('no-snapshots-msg').style.display = 'block';
+                }
+            }
+        })
+        .catch(err => {
+            console.error(err);
+            alert('Failed to load snapshot details.');
+        });
+    }
+
+    function zoomImage(url) {
+        document.getElementById('zoomed-image').src = url;
+        $('#zoomModal').modal('show');
+    }
+
+    // --- BUSINESS ANALYTICS CHARTS GENERATION ---
+    (function() {
+        const rawData = {{ data | tojson }};
+        if (!rawData || rawData.length === 0) return;
+        
+        let lowRisk = 0, medRisk = 0, highRisk = 0;
+        let scoreBuckets = [0, 0, 0, 0, 0]; // 0-2, 3-4, 5-6, 7-8, 9-10
+        let totalTab = 0, totalFS = 0, totalLook = 0, totalFace = 0, totalNoise = 0;
+        
+        rawData.forEach(item => {
+            // 1. Risk Profile classification
+            const violations = item.total_violations || 0;
+            if (violations >= 7) highRisk++;
+            else if (violations >= 3) medRisk++;
+            else lowRisk++;
+            
+            // 2. Score distributions (marks)
+            const score = item.marks || 0;
+            if (score <= 2) scoreBuckets[0]++;
+            else if (score <= 4) scoreBuckets[1]++;
+            else if (score <= 6) scoreBuckets[2]++;
+            else if (score <= 8) scoreBuckets[3]++;
+            else scoreBuckets[4]++;
+            
+            // 3. Violation breakdown counts
+            totalTab += (item.tab_switches || 0);
+            totalFS += (item.fullscreen_exits || 0);
+            totalLook += (item.look_away || 0);
+            totalFace += ((item.face_missing || 0) + (item.multiple_faces || 0));
+            totalNoise += (item.noise_violations || 0);
+        });
+        
+        const chartOptions = {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: { color: '#ffffff', font: { family: 'Outfit', size: 11 } }
+                }
+            }
+        };
+        
+        // A. Class Risk Profile Doughnut Chart
+        new Chart(document.getElementById('riskChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Low Risk', 'Med Risk', 'High Risk'],
+                datasets: [{
+                    data: [lowRisk, medRisk, highRisk],
+                    backgroundColor: ['#00e676', '#ff9f43', '#ff3b5c'],
+                    borderWidth: 0
+                }]
+            },
+            options: chartOptions
+        });
+        
+        // B. Class Performance Score Distribution
+        new Chart(document.getElementById('scoreChart'), {
+            type: 'bar',
+            data: {
+                labels: ['0-2 Marks', '3-4 Marks', '5-6 Marks', '7-8 Marks', '9-10 Marks'],
+                datasets: [{
+                    label: 'Candidates',
+                    data: scoreBuckets,
+                    backgroundColor: '#7c3aed',
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    x: { ticks: { color: '#ffffff' }, grid: { display: false } },
+                    y: { ticks: { color: '#ffffff', precision: 0 }, grid: { color: 'rgba(255,255,255,0.05)' } }
+                }
+            }
+        });
+        
+        // C. Violation Breakdown Polar Chart
+        new Chart(document.getElementById('violationChart'), {
+            type: 'polarArea',
+            data: {
+                labels: ['Tab', 'FS Exit', 'Gaze', 'Face', 'Noise'],
+                datasets: [{
+                    data: [totalTab, totalFS, totalLook, totalFace, totalNoise],
+                    backgroundColor: [
+                        'rgba(255, 59, 92, 0.6)',
+                        'rgba(124, 58, 237, 0.6)',
+                        'rgba(255, 159, 67, 0.6)',
+                        'rgba(0, 230, 118, 0.6)',
+                        'rgba(0, 188, 212, 0.6)'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                ...chartOptions,
+                scales: {
+                    r: {
+                        grid: { color: 'rgba(255,255,255,0.05)' },
+                        angleLines: { color: 'rgba(255,255,255,0.05)' },
+                        pointLabels: { color: '#ffffff' },
+                        ticks: { display: false }
+                    }
+                }
+            }
+        });
+    })();
+</script>
+
+<footer class="page-footer text-center" style="padding: 25px; background-color: white; border-top: 1px solid #edf2f7; font-family: 'Outfit';">
+    <div class="container-fluid">
+        <h5 style="font-weight: 600; color: #2d3748; margin-bottom: 5px;">ProctorShield</h5>
+        <p style="color: #718096; font-size: 0.9rem; margin-bottom: 0;">Safeguarding Exam Integrity on the Web. contact: proctorshield.contact@gmail.com</p>
+    </div>
+</footer>
+
+{% endblock content %}

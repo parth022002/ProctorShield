@@ -1,0 +1,129 @@
+{% extends "layout.html" %}
+{% block content%}
+<style>
+  .zoom {
+
+    transition: transform .2s;
+    /* Animation */
+  }
+
+  .zoom:hover {
+    transform: scale(1.2);
+    /* (150% zoom - Note: if the zoom is too large, it will go outside of the viewport) */
+  }
+
+  .button2:hover {
+    box-shadow: 0 12px 16px 0 rgba(0, 0, 0, 0.24), 0 17px 50px 0 rgba(0, 0, 0, 0.19);
+  }
+
+  .po:hover {
+    transition: transform .2s;
+  }
+
+  .po:hover {
+    background-color: cyan;
+  }
+</style>
+<div class="jumbotron" style="margin-top: 50px; background-color:white;">
+
+  <div class="jumbotron" style=" background-color:pink; ">
+    <!--the Pink box with border-->
+
+    <!--<div class="jumbotron" style=" background-color:pink; border-radius:black solid;">-->
+    <h2>All Your Quizzes Are Listed Below</h2>
+
+
+  </div>
+  <!-- The jumbotron just below this can be used as a container for whole the page and its contents-->
+  <!-- ======  Start from here ======  -->
+
+  {% if not(quiz_exists) %}
+
+
+  <div class="jumbotron" style="background-color: white;  ">
+    <div class="d-flex justify-content-center">
+      <h1>No Quizzes Created</h1>
+    </div>
+    <div class="d-flex justify-content-center">
+      <h3><a class="form-link" href="{{url_for('teacher.create_new_quiz')}}">Create Your First Quiz...</a><h3>
+    </div>
+  </div>
+  <hr style="width:100%;text-align:left;margin-left:0; width:10px;">
+  {% endif %}
+
+  {% for quiz in quiz_list %}
+  <div class="glass-card" style="padding: 25px; margin-bottom: 25px; border-radius: 20px;">
+    <div class="row align-items-center justify-content-between">
+      <div class="col-md-6">
+        <h4 style="margin: 0; font-weight: 600; color: #ffffff; text-align: left;">
+          <span style="color: #ff3b5c; font-size: 0.85rem; text-transform: uppercase; font-weight: 700; display: block; margin-bottom: 5px; letter-spacing: 0.5px;">Quiz ID: {{quiz.id}}</span>
+          {{quiz.title}}
+          {% if quiz.results_published %}
+          <span class="badge badge-success ml-2" style="font-size: 0.75rem; vertical-align: middle; border-radius: 10px; background-color: #28a745; color: white;">Results Published</span>
+          {% else %}
+          <span class="badge badge-warning ml-2" style="font-size: 0.75rem; vertical-align: middle; border-radius: 10px; background-color: #ffc107; color: #212529;">Results Draft</span>
+          {% endif %}
+        </h4>
+      </div>
+      <div class="col-md-6 text-right d-flex justify-content-end align-items-center">
+        <div class="example hoverable mr-2">
+          <form method="POST" action="{{ url_for('teacher.toggle_publish', quiz_id=quiz.id) }}" style="margin: 0; display: inline-block;">
+             <button type="submit" class="btn {% if quiz.results_published %}btn-secondary{% else %}btn-warning{% endif %}"
+                style="width: 130px; font-weight: 700; border-radius: 12px; padding: 10px 15px; border: none; font-size: 0.9rem;">
+                {% if quiz.results_published %}Unpublish{% else %}Publish{% endif %}
+             </button>
+          </form>
+        </div>
+        <div class="example hoverable">
+          <a type="button" class="btn btn-success" href="{{url_for('teacher.view_performance',quiz_id = quiz.id)}}"
+             style="width: 170px; background-color: #e43c5c; font-weight: 700; border-radius: 12px; padding: 10px 20px; border: none;">View Performance</a>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+
+
+
+
+</div>
+
+<footer class="page-footer blue text-center " style="padding: 15px; background-color:rgba(128, 128, 128, 0.199);">
+
+  <!--Footer Links-->
+  <div class="container-fluid" style="padding: 15px;">
+      <div class="row">
+
+          <!--First column-->
+          <div class="col-md-6">
+              <h5 class="title mb-3">Proctorshield</h5>
+              <p>
+                ProctorShield: Safeguarding Learning Integrity and Quality Amidst Adversity
+                  
+              </p>
+          </div>
+          <!--/.First column-->
+
+          <!--Second column-->
+          <div class="col">
+              <h5 class="title">Contact Us</h5>
+              
+                  <li><a href="#">Mail</a></li>
+                  <p>Proctorshield.contact@gmail.com</p>
+                  <li><a href="#">LinkedIn</a></li>
+                  
+                  
+              
+          </div>
+          <!--/.Second column-->
+      </div>
+  </div>
+ 
+</footer>
+
+
+
+
+
+{% endblock content %}

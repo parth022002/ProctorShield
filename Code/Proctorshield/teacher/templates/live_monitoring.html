@@ -1,0 +1,182 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+<head>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+        font-family: 'Outfit', sans-serif;
+        background-color: #f7f9fc;
+    }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(12px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.25);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.05);
+    }
+
+    .table-container {
+        background: white;
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        margin-top: 30px;
+        border: 1px solid #edf2f7;
+    }
+
+    .table thead th {
+        border-top: none;
+        background-color: #1a202c;
+        color: white;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.85rem;
+        letter-spacing: 0.5px;
+        padding: 15px;
+    }
+
+    .table td, .table th {
+        padding: 15px;
+        vertical-align: middle;
+        border-top: 1px solid #edf2f7;
+    }
+
+    .live-indicator {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: #dc3545;
+        font-weight: bold;
+        animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 0.6; }
+        50% { opacity: 1; }
+        100% { opacity: 0.6; }
+    }
+  </style>
+</head>
+
+<div class="container" style="margin-top: 90px; margin-bottom: 50px;">
+    
+    <!-- Header Block -->
+    <div class="glass-card" style="padding: 30px 40px; border-radius: 20px; margin-bottom: 30px; display: flex; justify-content: space-between; align-items: center; background: white;">
+        <div>
+            <h5 class="live-indicator">
+                <span style="font-size: 1.2rem;">🔴</span> LIVE PROCTORING MONITOR
+            </h5>
+            <h2 style="font-weight: 700; color: #2d3748; margin: 0;">Quiz: {{ quiz.title }}</h2>
+        </div>
+        <div>
+            <a href="{{ url_for('teacher.activate_quiz_list') }}" class="btn btn-secondary" style="border-radius: 20px; font-weight: bold; padding: 10px 25px;">
+                ← Back to Active List
+            </a>
+        </div>
+    </div>
+
+    <!-- Active Candidates Table -->
+    <div class="table-container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 style="font-weight: 700; color: #2d3748; margin: 0;">Current Attempt Logs</h4>
+            <span class="badge badge-info" style="font-size: 1rem; padding: 8px 15px; border-radius: 20px;" id="candidate-count">
+                Active Candidates: Loading...
+            </span>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Student ID</th>
+                        <th scope="col">Name</th>
+                        <th scope="col">Tab Switches</th>
+                        <th scope="col">Fullscreen Exits</th>
+                        <th scope="col">Look Away</th>
+                        <th scope="col">Face Alerts</th>
+                        <th scope="col">Noise Alerts</th>
+                        <th scope="col">Status</th>
+                        <th scope="col">Exam State</th>
+                    </tr>
+                </thead>
+                <tbody id="live-attempts-body">
+                    <tr>
+                        <td colspan="9" style="text-align: center; color: #a0aec0; padding: 40px;">
+                            Loading live attempts feed...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const quizId = {{ quiz.id }};
+    const attemptsBody = document.getElementById('live-attempts-body');
+    const candidateCount = document.getElementById('candidate-count');
+
+    async function fetchLiveLogs() {
+        try {
+            const res = await fetch(`/teacher/live_monitoring_data/${quizId}`);
+            const payload = await res.json();
+            
+            if (payload.success) {
+                candidateCount.innerText = `Active Candidates: ${payload.students.length}`;
+                
+                if (payload.students.length === 0) {
+                    attemptsBody.innerHTML = `
+                        <tr>
+                            <td colspan="9" style="text-align: center; color: #a0aec0; padding: 40px;">
+                                <span style="font-size: 2rem;">📭</span>
+                                <p style="margin-top: 10px; font-weight: 500;">No students are currently taking this quiz.</p>
+                            </td>
+                        </tr>
+                    `;
+                    return;
+                }
+
+                let html = '';
+                for (let s of payload.students) {
+                    let badgeClass = 'badge-success';
+                    if (s.status === 'Suspicious') badgeClass = 'badge-warning';
+                    if (s.status === 'Flagged') badgeClass = 'badge-danger';
+
+                    let attemptStateHTML = s.is_submitted 
+                        ? `<span class="badge badge-secondary" style="border-radius:10px; padding: 5px 10px;">Submitted</span>`
+                        : `<span class="badge badge-success" style="border-radius:10px; padding: 5px 10px; animation: pulse 1s infinite;">In Progress</span>`;
+
+                    html += `
+                        <tr>
+                            <td><span style="font-family: monospace; color: #4a5568;">ST-${s.student_id}</span></td>
+                            <td><strong style="color: #2d3748;">${s.student_name}</strong></td>
+                            <td style="color: ${s.tab_switches > 0 ? '#dc3545' : '#718096'}; font-weight: ${s.tab_switches > 0 ? '600' : 'normal'};">${s.tab_switches}</td>
+                            <td style="color: ${s.fullscreen_exits > 0 ? '#dc3545' : '#718096'}; font-weight: ${s.fullscreen_exits > 0 ? '600' : 'normal'};">${s.fullscreen_exits}</td>
+                            <td style="color: ${s.look_away > 0 ? '#ff9f43' : '#718096'}; font-weight: ${s.look_away > 0 ? '600' : 'normal'};">${s.look_away}</td>
+                            <td style="color: ${s.face_alerts > 0 ? '#ff9f43' : '#718096'}; font-weight: ${s.face_alerts > 0 ? '600' : 'normal'};">${s.face_alerts}</td>
+                            <td style="color: ${s.noise_violations > 0 ? '#ff9f43' : '#718096'}; font-weight: ${s.noise_violations > 0 ? '600' : 'normal'};">${s.noise_violations}</td>
+                            <td>
+                                <span class="badge ${badgeClass}" style="padding: 6px 12px; border-radius: 12px; font-size: 0.85rem;">${s.status}</span>
+                            </td>
+                            <td>${attemptStateHTML}</td>
+                        </tr>
+                    `;
+                }
+                attemptsBody.innerHTML = html;
+            }
+        } catch (err) {
+            console.error('Error fetching live logs:', err);
+        }
+    }
+
+    // Initial load
+    fetchLiveLogs();
+
+    // Auto-poll every 3 seconds
+    setInterval(fetchLiveLogs, 3000);
+});
+</script>
+{% endblock content %}
